@@ -1,153 +1,233 @@
-MP Assignment: I think I Shall Never See, a Poem as Lovely as in Binary Form
+# MP Assignment: I Think I Shall Never See, a Poem as Lovely as in Binary Form
 
+## Contents
 
-General Description (Read thoroughly until the Caveats Section):
-When data is sent over the internet (movie, image, pdfs, emails, etc), it is sent as a series of packets - the data broken down into parts with a certain size. These packets contain information such as source address of the data, destination address, length of the data, the data itself, etc. An example of a packet (header information or the packet header) looks like the one below:
+- [General Description](#general-description)
+- [Packet Description](#packet-description)
+- [Checksum Algorithm](#checksum-algorithm)
+- [Sample Packet](#sample-packet)
+- [Implementation](#implementation)
+- [Caveats](#caveats)
 
-add image: ip-header-2.png
+## General Description
 
-Check out http://www.thegeekstuff.com/2012/03/ip-protocol-header/ to read more on the packet header.
+When data is sent over the internet (movies, images, PDFs, emails, etc.), it is sent as a series of **packets**: the data is broken down into parts of a certain size. Each packet contains information such as the source address, destination address, length of the data, and the data itself. The header information of a real packet looks like this:
 
-For this MP Assignment, you are to reconstruct packets "sent" into the actual message or data that is readable.  The packets are sent in binary format.
+![IP packet header layout](ip-header-2.png)
 
-Packet Description
-Since this is a simple simulation, the packets in this MP Assignment will not contain all the information found in an actual packet. The data part of the packet will contain a line from a poem. This means that each packet represents a line from a poem. The title of the poem is represented with a packet.
+Read more about the packet header at <http://www.thegeekstuff.com/2012/03/ip-protocol-header/>.
 
-Below shows a sample of 3 packets:
+For this MP Assignment, you are to **reconstruct packets "sent" into the actual readable message**. The packets are sent in binary format.
 
+## Packet Description
+
+This is a simple simulation, so the packets do not contain all the information found in an actual packet. The data part of each packet contains **one line of a poem**. The title of the poem is also represented by a packet.
+
+Below are 3 sample packets:
+
+```
 101011000110100101011001000101111011100101001011110100001001011100000000000000001010001011000000000000000100100001010100011011110010000001000001011101010111010001110101011011010110111000000000
 00001111010110101111011110101110110000001000001000001010111011010000000000000000111001000001000000000000000100000100100101100110
 1010110001101001010110010001011110111001010010111101000010010111111111111110100001110000101100100000000000000000
-The packets will contain the following fields:
+```
 
-fields_green
+Each packet contains the following fields, in this order:
 
-Source and Destination Addresses
-Both the addresses follow the IPv4 addresses. IPv4 addresses are 32-bit strings.  And they divided into 4 octets, separated by a dot. Each octet can take a value from 0 - 255 (since there 8 bits in each octet, the maximum value is 28 - 1, which 255). Some sample IP addresses that you may have encountered are of the form: 69.89.31.226 or 192.130.10.237.  This source/destination pair of addresses determines whether the packets belong to the same poem.  All packets with the same source/destination pair belong to one poem.
+| Field | Size | Notes |
+| --- | --- | --- |
+| Source address | 32 bits | IPv4 address |
+| Destination address | 32 bits | IPv4 address |
+| Sequence number | 16 bits | Order of the line in the poem |
+| Checksum | 16 bits | Used to detect corruption |
+| Length of data | 16 bits | Length of the data part, in bits |
+| Data | variable | One line of the poem, 8 bits per character (ASCII) |
+| Padding | variable | Zeros, so the whole packet is divisible by 16 bits |
 
-ip address sample
+### Source and Destination Addresses
 
-Sequence Number
+Both addresses are IPv4 addresses: 32-bit strings divided into 4 octets separated by dots. Each octet holds a value from 0 to 255 (8 bits, so the maximum is 2<sup>8</sup> − 1 = 255). Examples: `69.89.31.226` and `192.130.10.237`.
 
-Since messages or data sent over the internet are broken down into a number of packets, there has to be a way for the recipient to know which packets belong to a particular data (datagram).  For our purpose, we will call this as a sequence number.  And it is 16 bits long.  This will be used for reconstruction. The sequence number indicates the ordering of the lines of the poem. A zero (0) sequence number means that the packet carries the title of the poem.  A packet that has a negative sequence number indicates that the packet is the "end-of-poem" packet. The absolute value of this number represents the total number of packets that belong to one poem. Say for instance a packet arrives with -10 as its sequence number, this means that there is a poem with 10 lines total, including the title.  This is going to be especially useful when there will be missing packets or missing lines from a certain poem. And for checking whether there are duplicate packets or lines received.
+The source/destination pair determines which poem a packet belongs to. **All packets with the same source/destination pair belong to one poem.**
 
-Checksum
-When packets are sent or transmitted over the internet, it is possible for the packets to get corrupted. A 0 might have turned into a 1 or vice versa or even an entire chunk corrupted and not just a bit. In order for the recipient to determine such an error in the transmission, a checksum is used.  Before a packet is transmitted, a value called the checksum is computed based on this packet using some algorithm.  Once the packet reaches its destination, the receiver computes for the checksum using the same algorithm and based on the packet received.  If the computed checksum and sent checksum match, then no such error occurred. But if they do not match, then an error has occurred while the packet was in transit.
+### Sequence Number
 
-Checksum Algorithm for this MP Assignment
-Say we have the following packet:
+Data sent over the internet is broken into many packets, so the recipient needs a way to know which packets belong together and in what order. The sequence number is **16 bits** long and is used for reconstruction.
 
+| Sequence number | Meaning |
+| --- | --- |
+| `0` | The packet carries the **title** of the poem |
+| `1, 2, ...` | The lines of the poem, in order |
+| Negative | The **end-of-poem** packet. Its absolute value is the total number of packets in the poem, including the title. |
+
+For example, a sequence number of `-10` means the poem has 10 lines in total, including the title. This is especially useful for detecting missing packets or lines, and for detecting duplicates.
+
+### Checksum
+
+Packets can get corrupted in transit. A 0 might turn into a 1 or vice versa, or an entire chunk might be corrupted. To detect this, a **checksum** is used:
+
+1. Before a packet is sent, its checksum is computed with some algorithm.
+2. When the packet arrives, the receiver computes the checksum with the same algorithm.
+3. If the computed and sent checksums match, no error occurred. If they differ, the packet was corrupted in transit.
+
+### Length of Data
+
+A 16-bit value giving the length of the data part **in bits**. This is why the size of the data part can vary.
+
+### Data
+
+The data is one line of a poem. Each letter, punctuation mark or space is transmitted as its ASCII code in binary (8 bits per character).
+
+### Padding
+
+The checksum algorithm divides the packet into equal 16-bit parts. Because the data length varies, the packet may not be divisible by 16, so it may have padding. The padding is a sequence of `0`s, just enough to make the packet length divisible by 16. **The padding is not part of the data.**
+
+## Checksum Algorithm
+
+Take the following packet:
+
+```
 1010110001101001010110010001011110111001010010111101000010010111111111111110100001110000101100100000000000000000
-Divide the packet into sub-parts containing 16 bits each.
+```
 
+**Step 1.** Divide the packet into 16-bit sub-parts:
+
+```
 1010110001101001/0101100100010111/1011100101001011/1101000010010111/1111111111101000/0111000010110010/0000000000000000
-Before performing any computation, make sure that the checksum is set to zero first. This is because the checksum is computed based on the packet with the checksum set to zero initially. Make sure that you keep a copy of this checksum.
+```
 
+**Step 2.** Set the checksum to zero before computing anything, and keep a copy of the original checksum. The checksum is computed on the packet with the checksum field set to 0.
+
+```
 1010110001101001/0101100100010111/1011100101001011/0000000000000000/1111111111101000/0111000010110010/0000000000000000
-Perform a series of additions on the 16-bit sub-parts of the packet. Since there will be a possibility for the sum to contain 17 bits due to a carry, we will use 17-bit numbers instead of 16.
+```
 
-01010110001101001 - adding the first two 16-bit sub-parts
+**Step 3.** Add the 16-bit sub-parts one after another. A sum can carry into a 17th bit, so use **17-bit numbers**.
+
+Adding the first two sub-parts:
+
+```
+01010110001101001
 00101100100010111
+-----------------
 10000010110000000
-If sum results in an overflow, add this bit to the sum (remove the most significant which is exactly the overflow).
+```
 
+**Step 4.** If the sum overflows, remove the overflow bit (the most significant bit, keeping 17 bits) and add it back to the sum:
+
+```
 10000010110000000 - that is the overflow
-00000010110000000 - removing the overflow (we still have to have 17 bits)
+00000010110000000 - removing the overflow (still 17 bits)
 
 00000010110000000
-00000000000000001 - this is the overflow addition
-00000010110000001 - this is the resulting sum
-Add this new sum to the next 16-bit sub-part.  Repeat the process until all the 16-bit sub-parts have been added.
+00000000000000001 - the overflow addition
+-----------------
+00000010110000001 - the resulting sum
+```
 
+**Step 5.** Add this sum to the next 16-bit sub-part. Repeat until all sub-parts are added.
+
+```
 00000010110000001
 01011100101001011 - third sub-part
+-----------------
 01011111011001100
 
 01011111011001100
-00000000000000000 - fourth sub-part (this is actually the checksum default value)
+00000000000000000 - fourth sub-part (the checksum default value)
+-----------------
 01011111011001100
 
 01011111011001100
 01111111111101000 - fifth sub-part
-11011111010110100
-
+-----------------
 11011111010110100 - a carry overflow
 
 01011111010110100
 00000000000000001 - the overflow
+-----------------
 01011111010110101
 
 01011111010110101
 00111000010110010 - sixth sub-part
-10010111101100111
-
+-----------------
 10010111101100111 - a carry overflow
 
 00010111101100111
 00000000000000001 - the overflow
+-----------------
 00010111101101000
 
 00010111101101000
 00000000000000000 - seventh sub-part
-00010111101101000 - this is the final sum, excluding the highlighted 0.
-The final step is to get the 1's complement of the final sum (only its 16 bits, excluding the overflow).
+-----------------
+00010111101101000 - final sum
+```
 
+**Step 6.** Take the 1's complement of the final sum (only its 16 bits, excluding the overflow bit):
+
+```
 0010111101101000 - final sum
 1101000010010111 - 1's complement
 
 checksum --> 1101000010010111
-To check whether there was an error in transmitting this packet, compare this computed checksum with the transmitted checksum.
+```
 
-1101000010010111 - transmitted checksum take from the packet received
-1101000010010111 - the computed checksum
-Since they match, the packet is not corrupted.  If they do not match, then the packet is corrupted.
+**Step 7.** Compare the computed checksum with the transmitted checksum:
 
-Length of Data
-This information is 16 bits long. This represents how long the data part is in bits.  This is the reason why the size of the data part is variable. It is dependent on the field Length of Data.
+```
+1101000010010111 - transmitted checksum, taken from the received packet
+1101000010010111 - computed checksum
+```
 
-Data
-The data will be a line from a poem.  Each letter, punctuation or space of a line is converted and transmitted using its ASCII code written, of course, in binary. 
+They match, so the packet is **not corrupted**. If they do not match, the packet is corrupted.
 
-Padding
-Notice that in computing for the checksum, the packet is divided into equal parts of 16 bits each.  Since the length of the data is variable, it is possible that the entire packet is not divisible by 16.  This means that the packet may or may not have a padding. In this assignment, the padding is simply a sequence of 0's.  The number of 0's is dependent on how many is needed to make the length of the entire packet divisible by 16. The padding is not part of the data.
+## Sample Packet
 
-Sample
-Below is a sample packet.
-
+```
 101011000110100101011001000101111011100101001011110100001001011100000000000000011011101000001101000000010011100001010011011001010110000101110011011011110110111000100000011011110110011000100000011011010110100101110011011101000111001100100000011000010110111001100100001000000110110101100101011011000110110001101111011101110010000001100110011100100111010101101001011101000110011001110101011011000110111001100101011100110111001100000000
-The first 32 bits represent the source IP address. The source IP address should be decoded and its 4-octet form, separated by dots, is 172.105.89.23.
+```
 
-101011000110100101011001000101111011100101001011110100001001011100000000000000011011101000001101000000010011100001010011011001010110000101110011011011110110111000100000011011110110011000100000011011010110100101110011011101000111001100100000011000010110111001100100001000000110110101100101011011000110110001101111011101110010000001100110011100100111010101101001011101000110011001110101011011000110111001100101011100110111001100000000
-The second set of 32 bits represents the destination IP address.  Its 4-octet form, separated by dots, is 185.75.208.151.
+Reading the packet from left to right:
 
-101011000110100101011001000101111011100101001011110100001001011100000000000000011011101000001101000000010011100001010011011001010110000101110011011011110110111000100000011011110110011000100000011011010110100101110011011101000111001100100000011000010110111001100100001000000110110101100101011011000110110001101111011101110010000001100110011100100111010101101001011101000110011001110101011011000110111001100101011100110111001100000000
-The next 16 bits represent the sequence number.  And this packet is sequence number 1.  Recall that the sequence numbers start with 0, the packet that represents the title.
+| Field | Bits | Decoded value |
+| --- | --- | --- |
+| Source address (32 bits) | `10101100 01101001 01011001 00010111` | `172.105.89.23` |
+| Destination address (32 bits) | `10111001 01001011 11010000 10010111` | `185.75.208.151` |
+| Sequence number (16 bits) | `0000000000000001` | `1` (sequence numbers start at 0, the title packet) |
+| Checksum (16 bits) | `1011101000001101` | Treated as `0` when computing the checksum |
+| Length of data (16 bits) | `0000000100111000` | `312`, so the data part is 312 bits |
+| Data (312 bits) | `01010011 01100101 ...` | One line of the poem, 8 bits per character |
+| Padding (8 bits) | `00000000` | Padding only, not information. Makes the packet length divisible by 16. |
 
-101011000110100101011001000101111011100101001011110100001001011100000000000000011011101000001101000000010011100001010011011001010110000101110011011011110110111000100000011011110110011000100000011011010110100101110011011101000111001100100000011000010110111001100100001000000110110101100101011011000110110001101111011101110010000001100110011100100111010101101001011101000110011001110101011011000110111001100101011100110111001100000000
-The next 16 bits represent the checksum.  Do not forget that the checksum of a packet is computed with this set of bits set to 0.
+## Implementation
 
-101011000110100101011001000101111011100101001011110100001001011100000000000000011011101000001101000000010011100001010011011001010110000101110011011011110110111000100000011011110110011000100000011011010110100101110011011101000111001100100000011000010110111001100100001000000110110101100101011011000110110001101111011101110010000001100110011100100111010101101001011101000110011001110101011011000110111001100101011100110111001100000000
-The next 16 bits represent the length of the data. Converting the above 16 bits gives us 312.  This means that the data part is composed of 312 bits, shown below.
+### Representation
 
-101011000110100101011001000101111011100101001011110100001001011100000000000000011011101000001101000000010011100001010011011001010110000101110011011011110110111000100000011011110110011000100000011011010110100101110011011101000111001100100000011000010110111001100100001000000110110101100101011011000110110001101111011101110010000001100110011100100111010101101001011101000110011001110101011011000110111001100101011100110111001100000000
-The data part should be converted to actual characters that will form the line from a poem where this packet belongs to.  Each character is represented with 8 bits.
+A poem is divided into packets. Represent a poem as a **list of packets**, and the entire collection of poems as a **list of lists of packets**: `list< list<packets> >`.
 
-101011000110100101011001000101111011100101001011110100001001011100000000000000011011101000001101000000010011100001010011011001010110000101110011011011110110111000100000011011110110011000100000011011010110100101110011011101000111001100100000011000010110111001100100001000000110110101100101011011000110110001101111011101110010000001100110011100100111010101101001011101000110011001110101011011000110111001100101011100110111001100000000
-The last 8 bits are simply padded data. They do not represent any information. They are used to make sure that the size of the entire packet is divisible by 16. This is needed for the checksum algorithm described in an earlier section.
+You may use the available C++ libraries. `bitset` is especially useful.
 
-Implementation
+### Input
 
-Representation
-In this assignment, a poem has been divided into packets.  A poem should be represented with a use of a list of packets.  The entire collection of poems should be represented as a list of list of packets (list < list<packets> >). You may use available c++ library in solving the problem.  The bitset is especially useful.
+The input is a **file** with one packet per line, written in binary. The lines are not necessarily in the order they appear in a poem.
 
-Input
-The input to this MP Assignment is a file.  The file will contain a number of lines. Each of these lines represents a packet written in binary.  The lines are not necessarily arranged in the correct order they appear in a poem. This file should be read from the console. This means that the only input we need to read is a string that represents the input file.
+The file is read through the console: the only input you read from the console is a **string with the name of the input file**.
 
-Output
-The output is the reconstructed/reassembled poems.  Simply display this on the console.  Write the title first. In the next line, write the source/destination pair followed by the lines from the poem. Since the input may contain more than one poem, write the poems in the order that they are found in the input file.  Since we use the source/destination addresses to identify the poems, take note of the instances a new source/destination pair is read in the file.
+### Output
 
-Below is a sample output.
+The output is the reconstructed poems, displayed on the console.
 
+For each poem:
+
+1. Write the title.
+2. On the next line, write the source/destination pair.
+3. Write the lines of the poem.
+
+The input may contain more than one poem. Write the poems **in the order they are found in the input file**. Poems are identified by their source/destination addresses, so take note of each new source/destination pair read from the file.
+
+### Sample Output
+
+```
 To Autumn
 172.105.89.23/185.75.208.151
 Season of mists and mellow fruitfulness,
@@ -255,12 +335,16 @@ leaving you (it is impossible to untangle the threads)
 your own life, timid and standing high and growing,
 so that, sometimes blocked in, sometimes reaching out,
 one moment your life is a stone in you, and the next, a star.
-Caveats
-In transmitting the packets, it cannot be avoided that some 
+```
 
-will be missing - failed to reach the recipient
-missing packets or lines will have to represented in the output file as [line missing] or [title missing] in case the title is not received
-will be received more than once - the case of duplicate packets received
-make sure that duplicate packets or lines are removed from the list of packets
-will be corrupted
-corrupted packets or lines will have to represented in the output file as [line corrupted]
+## Caveats
+
+In transmitting the packets, it cannot be avoided that some packets:
+
+- **Will be missing** (failed to reach the recipient).
+  - Missing packets or lines must be shown in the output as `[line missing]`.
+  - If the title is not received, show `[title missing]`.
+- **Will be received more than once** (duplicate packets).
+  - Make sure duplicate packets or lines are removed from the list of packets.
+- **Will be corrupted.**
+  - Corrupted packets or lines must be shown in the output as `[line corrupted]`.
