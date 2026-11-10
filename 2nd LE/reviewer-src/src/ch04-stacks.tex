@@ -1,0 +1,285 @@
+\chapter{Stacks}\label{ch:stacks}
+
+\section{The Stack ADT}
+
+\begin{definition}[Stack]
+A \emph{stack} is a sequence in which insertions and deletions take place at one end
+only, the \emph{top}. Its operations are \cc{push(x)} (add $x$ on top), \cc{pop()}
+(remove and return the top item), \cc{top()} or \cc{peek()} (return the top item without
+removing it), \cc{empty()} and \cc{size()}. The item removed by \cc{pop} is always the
+one inserted most recently: \emph{last in, first out} (LIFO).
+\end{definition}
+
+A stack is the right structure whenever the most recent unfinished thing must be
+finished first: an opening bracket waits for its closing bracket, an operator waits for
+its right operand, a function call waits for the calls it made, an editor's last action
+is the first to be undone.
+
+\begin{note}{Popping an empty stack}
+\cc{pop} and \cc{top} on an empty stack are errors (\emph{stack underflow}); \cc{push} on
+a full fixed-capacity stack is \emph{stack overflow}. The library below reports both
+through a return value of $0$ and then leaves the output parameter \emph{unchanged}. A
+client that ignores the return value reads whatever was in its variable before ---
+a favourite twist in tracing questions.
+\end{note}
+
+\section{Implementations}
+
+\para{Array stack} Keep the items in \cc{items[0..size-1]} with the top at
+\cc{items[size-1]}. Then push writes \cc{items[size++]} and pop reads
+\cc{items[--size]}: the top is at the \emph{rear} of the array list, where insertion and
+deletion cost $\Theta(1)$ (Theorem~\ref{thm:shift}). Putting the top at \cc{items[0]}
+would make both $\Theta(n)$.
+
+\listingfile[lastline=31,label=lst:stack]{lib/stackqueue.h}{The array stack used
+throughout Parts II and III (first part of \cc{stackqueue.h}). The struct contains the
+array, so it must be passed by pointer.}
+
+\para{Growable stack} With a vector instead of a fixed array (Section~\ref{sec:vector}
+of Chapter~\ref{ch:arrays}), push is $\Theta(1)$ amortised (Theorem~\ref{thm:amortised})
+and there is no overflow; this is \cc{std::stack<int>} on top of \cc{std::deque} or
+\cc{std::vector}.
+
+\para{Linked stack} In a singly linked list the head is the only end at which both
+insertion and deletion are $\Theta(1)$ (\cc{pushFront} of Listing~\ref{lst:sll} and
+\cc{popFront} of Listing~\ref{lst:sllpop}). Hence the top of a linked stack is the
+\emph{head}; no tail pointer is needed. Putting the top at the tail would make pop
+$\Theta(n)$, because \cc{popBack} has to find the predecessor of the tail.
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}lccc@{}}\toprule
+Operation & array stack & vector stack & linked stack (top = head)\\\midrule
+\cc{push}  & $\Theta(1)$, may overflow & $\Theta(1)$ amortised & $\Theta(1)$ + one \cc{malloc}\\
+\cc{pop}, \cc{top} & $\Theta(1)$ & $\Theta(1)$ & $\Theta(1)$ + one \cc{free}\\
+\cc{size}  & $\Theta(1)$ & $\Theta(1)$ & $\Theta(1)$ if a counter is kept\\
+space      & \cc{MAX} cells & $\le 3n$ cells & $n$ nodes, one pointer each\\\bottomrule
+\end{tabular}
+\caption{Stack implementations.}
+\end{table}
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}[x=7.5mm]
+\foreach \v [count=\i from 0] in {4,9,2,{},{}} \node[cell] (a\i) at (\i,0) {\v};
+\foreach \i in {0,...,4} \node[idx,above=0pt of a\i] {\i};
+\node[left,font=\scriptsize] at (-0.6,0) {size 3};
+\draw[ptr] (2,-0.9) node[below,lbl]{top} -- (a2.south);
+\foreach \v [count=\i from 0] in {4,9,2,7,{}} \node[cell] (b\i) at (\i+7,0) {\v};
+\node[cell,sh] at (10,0) {7};
+\node[above,font=\scriptsize] at (9,0.55) {after \texttt{push(7)}: size 4};
+\foreach \v [count=\i from 0] in {4,9,2,7,{}} \node[cell] (c\i) at (\i+7,-1.9) {\v};
+\node[cell,shd] at (10,-1.9) {7};
+\node[below,font=\scriptsize,align=center] at (9,-2.4) {after \texttt{pop()}: size 3, returns 7;\\ the 7 stays in the cell but is not on the stack};
+\end{tikzpicture}
+\caption{The array stack. A popped value remains in its cell (Example~\ref{ex:alinv}).}
+\end{figure}
+
+\section{Brackets and expressions}
+
+\subsection{Balanced brackets}
+
+Scan the string from left to right. Push every opening bracket. At a closing bracket,
+the opener it must match is the most recent one not yet matched, the top of the stack:
+pop it and compare. The string is balanced if and only if no comparison fails, no pop
+finds the stack empty, and the stack is empty at the end.
+
+\listingfile[label=lst:balanced]{sol/p32.c}{Balanced brackets (Problem~\ref{prob:32}).}
+
+The three ways to fail are three different strings: \cc{"(]"} (wrong kind),
+\cc{"())"} (closer with nothing open) and \cc{"(()"} (opener never closed). A counter
+suffices when there is only one kind of bracket; with several kinds the counter accepts
+\cc{"([)]"}, which the stack rejects.
+
+\subsection{Postfix notation}
+
+\begin{definition}[Postfix]
+In \emph{postfix} (reverse Polish) notation an operator follows its two operands:
+$a\;b\;\mathrm{op}$. Thus $2+3\cdot4$ is \cc{234*+} and $(2+3)\cdot4$ is \cc{23+4*}.
+Postfix needs no parentheses and no precedence rules.
+\end{definition}
+
+\para{Evaluation} Scan left to right; push operands; at an operator pop \emph{two}
+values, apply the operator, push the result. At the end the stack holds exactly one
+value, the result. The value popped \emph{first} is the \emph{right} operand: for
+\cc{93-} the stack is $[9,3]$, the first pop gives $b=3$, the second $a=9$, and the
+result is $a-b=6$. Swapping them gives $-6$; for \cc{+} and \cc{*} the mistake is
+invisible, which is why tracing questions use \cc{-} and \cc{/}
+(Tracing~\ref{trace:13}).
+
+\para{Infix to postfix (shunting-yard)} Operands go straight to the output. Operators
+wait on a stack. When an operator \cc{c} arrives, every operator on the stack that must
+be applied \emph{before} \cc{c} is popped to the output first: those of higher precedence
+and, for left-associative operators, those of \emph{equal} precedence. Then \cc{c} is
+pushed. A \cc{(} is pushed and acts as a floor; a \cc{)} pops to the output until the
+matching \cc{(}, which is discarded. At the end, the remaining operators are popped.
+
+\listingfile[label=lst:postfix]{sol/p33.c}{Infix to postfix and postfix evaluation
+(Problem~\ref{prob:33}); single-digit operands.}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}clll@{}}\toprule
+Read & Action & Operator stack (top right) & Output\\\midrule
+\cc{2} & output & & \cc{2}\\
+\cc{*} & push & \cc{*} & \cc{2}\\
+\cc{(} & push & \cc{* (} & \cc{2}\\
+\cc{3} & output & \cc{* (} & \cc{23}\\
+\cc{+} & top is \cc{(}: push & \cc{* ( +} & \cc{23}\\
+\cc{4} & output & \cc{* ( +} & \cc{234}\\
+\cc{)} & pop to \cc{(} & \cc{*} & \cc{234+}\\
+\cc{-} & pop \cc{*} (prec.\ $2\ge1$), push & \cc{-} & \cc{234+*}\\
+\cc{5} & output & \cc{-} & \cc{234+*5}\\
+end & pop all & & \cc{234+*5-}\\\bottomrule
+\end{tabular}
+\caption{Shunting-yard on \cc{2*(3+4)-5}. Evaluating \cc{234+*5-} gives $2\cdot7-5=9$.}
+\end{table}
+
+\begin{proposition}[Why \cc{>=}]
+With the test \cc{prec(top) >= prec(c)}, operators of equal precedence leave the stack
+in arrival order, so \cc{8-3-2} becomes \cc{83-2-}, which is $(8-3)-2=3$. With
+\cc{prec(top) > prec(c)} it becomes \cc{832--}, which is $8-(3-2)=7$: the operators
+would be treated as right-associative, which is correct only for exponentiation.
+\end{proposition}
+
+\section{The monotonic stack}\label{sec:monostack}
+
+Many problems ask, for every position $i$ of an array, for the nearest position to the
+left or right whose value is greater (or smaller) than \cc{a[i]}. The brute force scans
+from each $i$ and costs $\Theta(n^2)$. The \emph{monotonic stack} answers all $n$ queries
+in $\Theta(n)$.
+
+\para{Idea (next greater element)} Scan left to right. Keep on a stack the indices whose
+answer is still unknown. When \cc{a[i]} arrives, every waiting index $j$ with
+$\cc{a[j]}<\cc{a[i]}$ has found its answer, $\cc{a[i]}$, and is popped; then $i$ itself
+starts waiting. An index that is still waiting has no greater value to its right.
+
+\listingfile[label=lst:nextgreater]{sol/p35.c}{Next greater element
+(Problem~\ref{prob:35}): the template of all monotonic-stack solutions.}
+
+\begin{proposition}[The stack is monotonic]
+At every moment the values \cc{a[j]} of the waiting indices are non-increasing from the
+bottom to the top of the stack.
+\end{proposition}
+\begin{proof}
+Before \cc{i} is pushed, the loop has popped every waiting index with a smaller value,
+so the new top is at least \cc{a[i]}. By induction the whole stack is non-increasing.
+Consequently the pops of one round remove exactly the waiting indices with a value
+below \cc{a[i]}; they all sit at the top.
+\end{proof}
+
+\begin{theorem}[Linear time]\label{thm:monostack}
+\cc{nextGreater} runs in $\Theta(n)$ time although its inner \cc{while} loop may run up
+to $i$ times in round $i$.
+\end{theorem}
+\begin{proof}
+Every index is pushed exactly once, and every successful iteration of the \cc{while}
+pops one index. An index can be popped at most once after being pushed once, so the
+total number of iterations of the \cc{while} over \emph{all} rounds is at most $n$. Each
+round also does one failed test. The total is at most $n+n+n=O(n)$ steps, and clearly
+$\Omega(n)$.
+\end{proof}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}cccl@{}}\toprule
+$i$ & \cc{a[i]} & popped (answer \cc{a[i]}) & stack after (values)\\\midrule
+0 & 2 & --- & 2\\
+1 & 7 & 2 & 7\\
+2 & 3 & --- & 7 3\\
+3 & 5 & 3 & 7 5\\
+4 & 4 & --- & 7 5 4\\
+5 & 6 & 4, 5 & 7 6\\
+6 & 8 & 6, 7 & 8\\\bottomrule
+\end{tabular}
+\caption{Next greater on $[2,7,3,5,4,6,8]$. The answer is $[7,8,5,6,6,8,-1]$; the 8
+still waiting at the end gets $-1$.}
+\end{table}
+
+\para{Variants} Four choices produce the whole family.
+\begin{itemize}
+\item \emph{Greater} or \emph{smaller}: flip the comparison (the stack becomes
+  increasing).
+\item \emph{Next} (to the right) or \emph{previous} (to the left): for ``previous
+  greater'', the answer for $i$ is whatever is on top \emph{after} the pops, just before
+  $i$ is pushed. Alternatively, scan from right to left.
+\item \emph{Strict} or not: with \cc{<} equal values wait for each other; with \cc{<=} a
+  later equal value counts as an answer. Read the problem: ``strictly warmer''
+  (Problem~\ref{prob:36}) means \cc{<}.
+\item What is recorded: the value \cc{a[i]}, the index $i$, or the distance $i-j$
+  (daily temperatures).
+\end{itemize}
+The \emph{stock span} (Problem~\ref{prob:37}, Tracing~\ref{trace:15}) is the ``previous
+greater'' problem solved online: each day's price arrives after the previous day's
+answer was given, so the input cannot be scanned twice. The stack keeps pairs
+(price, span); a popped pair hands over the days it already covered.
+
+\section{Augmented stacks}
+
+\para{Min stack} A stack that also answers \cc{min()} in $\Theta(1)$ cannot recompute the
+minimum after every pop. Keep a second stack \cc{mins} in step with the first: at each
+level it holds the minimum of that level and everything below it. Push $x$ onto
+\cc{mins} as $\min(x,\text{top of \cc{mins}})$; pop both stacks together. Then
+\cc{min()} is the top of \cc{mins} (Problem~\ref{prob:34}).
+
+The general lesson: \emph{a stack's history is itself a stack}. Anything that depends
+only on the items at or below a level can be stored at that level and is restored for
+free by the pops.
+
+\section{Stack permutations}\label{sec:stackperm}
+
+Push the numbers $1,2,\dots,n$ in this order onto an initially empty stack, and pop at
+any moments, printing each popped number. Which output orders are possible?
+
+\begin{definition}[Stack permutation]
+A permutation $p_1p_2\cdots p_n$ of $1..n$ is a \emph{stack permutation} if it can be
+printed this way. An operation sequence is written as a word over \cc{u} (push the next
+number) and \cc{o} (pop and print); it has $n$ \cc{u}'s and $n$ \cc{o}'s, and no prefix
+has more \cc{o}'s than \cc{u}'s.
+\end{definition}
+
+\para{Greedy test} Process the target output from left to right. To print $p_k$: while
+the top is not $p_k$, push the next input number (if none is left, \emph{fail}); then
+pop. The greedy choice is forced: a number must be pushed before it is printed, and
+pushing \emph{beyond} $p_k$ only buries it. Thus each target has at most one operation
+sequence, and Problem~\ref{prob:42} decides the question in $\Theta(n)$.
+
+\begin{theorem}[The forbidden pattern]
+A permutation is a stack permutation if and only if there are no positions $i<j<k$ with
+$p_j<p_k<p_i$ (no subsequence with the shape \emph{high, low, middle}, the pattern
+\cc{312}).
+\end{theorem}
+\begin{proof}[Proof sketch]
+If $p_i$ is printed first, then $p_j$ and $p_k$, both smaller, were pushed before $p_i$.
+Since $p_j<p_k$, $p_j$ was pushed first and lies \emph{below} $p_k$; it cannot be printed
+before $p_k$ is popped. Conversely, if the greedy test gets stuck, the top $t$ is not the
+wanted $p_k$ and $p_k<t$ is buried below; $t$ was pushed for some earlier printed value
+$p_i>t$, and $p_i,p_k,t$ form the forbidden pattern (with $t$ printed later).
+\end{proof}
+
+For $n=3$ the stack permutations are \cc{123}, \cc{132}, \cc{213}, \cc{231} and \cc{321};
+the only impossible one is \cc{312}. In general their number is the \emph{Catalan
+number} $C_n=\frac{1}{n+1}\binom{2n}{n}$: $1,2,5,14,42,\dots$ (Tracing~\ref{trace:14}).
+
+\section{Stacks and recursion}
+
+Each call of a function pushes an \emph{activation record} (parameters, locals, return
+address) on the call stack; each return pops it. Hence every recursive procedure can be
+rewritten with an explicit stack, and conversely a stack-based procedure can often be
+written recursively, with the call stack doing the work: printing a singly linked list
+backwards (Tracing~\ref{trace:9}) is exactly ``push every node, then pop every node''.
+The recursion depth is the maximum stack size, so a recursive traversal of an $n$-node
+list uses $\Theta(n)$ memory and may overflow the call stack for long lists, while the
+loop version uses $\Theta(1)$.
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}p{0.38\linewidth}p{0.55\linewidth}@{}}\toprule
+If the problem says \dots & think of \dots\\\midrule
+brackets, tags, nested structure & push openers, pop on closers (\ref{prob:32}, \ref{prob:39})\\
+evaluate / convert an expression & two stacks or shunting-yard (\ref{prob:33})\\
+next / previous greater or smaller, span, ``until warmer'' & monotonic stack (\ref{prob:35}--\ref{prob:37})\\
+cancel adjacent pairs, collisions & the stack holds the survivors so far (\ref{prob:38}, \ref{prob:40})\\
+undo, back button, most recent first & a plain stack\\
+min / max in $\Theta(1)$ & a second stack in step (\ref{prob:34})\\
+is this pop order possible? & simulate greedily (\ref{prob:42})\\
+reverse something & push all, pop all\\\bottomrule
+\end{tabular}
+\caption{Recognising a stack problem. Numbers refer to the problems of
+Chapter~\ref{ch:problems}.}
+\end{table}

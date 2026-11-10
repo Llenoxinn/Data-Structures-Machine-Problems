@@ -1,0 +1,14 @@
+step 1: lo=0 hi=9 mid=4 a[mid]=7
+step 2: lo=0 hi=4 mid=2 a[mid]=4
+step 3: lo=0 hi=2 mid=1 a[mid]=4
+step 4: lo=0 hi=1 mid=0 a[mid]=2
+answer 1
+step 1: lo=0 hi=9 mid=4 a[mid]=7
+step 2: lo=5 hi=9 mid=7 a[mid]=15
+step 3: lo=5 hi=7 mid=6 a[mid]=12
+step 4: lo=5 hi=6 mid=5 a[mid]=9
+answer 6
+step 1: lo=0 hi=9 mid=4 a[mid]=7
+step 2: lo=5 hi=9 mid=7 a[mid]=15
+step 3: lo=8 hi=9 mid=8 a[mid]=15
+answer 9

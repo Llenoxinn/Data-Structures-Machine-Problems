@@ -1,0 +1,188 @@
+\chapter{Queues}\label{ch:queues}
+
+\section{The Queue ADT}
+
+\begin{definition}[Queue]
+A \emph{queue} is a sequence in which insertions take place at one end, the
+\emph{rear} (or back), and deletions at the other, the \emph{front}. Its operations are
+\cc{enqueue(x)} (also \cc{push}, \cc{add}, \cc{offer}), \cc{dequeue()} (also \cc{pop},
+\cc{remove}, \cc{poll}), \cc{front()} (\cc{peek}), \cc{empty()} and \cc{size()}. The
+item removed is always the one that has waited longest: \emph{first in, first out}
+(FIFO).
+\end{definition}
+
+Queues model waiting lines: print jobs, requests to a server, processes waiting for the
+processor (round-robin scheduling), messages between programs, and the frontier of a
+breadth-first search. In each case fairness means serving in order of arrival.
+
+\section{Array implementations}
+
+Both ends of a queue change, so the array list of Chapter~\ref{ch:arrays}, which is fast
+only at its rear, is not enough. There are three attempts.
+
+\para{1. Front at index 0} Enqueue is \cc{items[size++] = x}, $\Theta(1)$; dequeue reads
+\cc{items[0]} and shifts the remaining $n-1$ items left, $\Theta(n)$
+(Theorem~\ref{thm:shift}).
+
+\para{2. A moving front} Keep an index \cc{front} and dequeue by \cc{front++}. Both
+operations become $\Theta(1)$, but the occupied part \cc{items[front..rear]} drifts to
+the right. When it reaches the end of the array the queue reports ``full'' although the
+cells before \cc{front} are free (\emph{false overflow}).
+
+\para{3. The circular buffer} Let the indices wrap around: the cell after \cc{CAP-1} is
+\cc{0}. With \cc{front} and \cc{size}, item $i$ of the queue is
+\cc{items[(front+i) \% CAP]}; the rear item is $i=\cc{size}-1$ and the next free cell is
+\cc{(front+size) \% CAP}.
+\begin{itemize}
+\item \cc{enqueue(x)}: \cc{items[(front+size)\%CAP] = x; size++;}
+\item \cc{dequeue()}: \cc{x = items[front]; front = (front+1)\%CAP; size--;}
+\end{itemize}
+Every operation is $\Theta(1)$, and all \cc{CAP} cells are usable.
+
+\listingfile[firstline=33,label=lst:queue]{lib/stackqueue.h}{The circular queue used in
+Parts II and III (second part of \cc{stackqueue.h}).}
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}[x=7.5mm]
+\foreach \v/\s [count=\i from 0] in {9/sh,4/sh,{}/,{}/,{}/,{}/,5/sh,7/sh} \node[cell,\s] (a\i) at (\i,0) {\v};
+\foreach \i in {0,...,7} \node[idx,above=0pt of a\i] {\i};
+\draw[ptr] (6,-0.9) node[below,lbl]{front=6} -- (a6.south);
+\draw[ptr] (2,-0.9) node[below,lbl]{(front+size)\%8 = 2} -- (a2.south);
+\node[right,font=\scriptsize,align=left] at (8.6,0) {CAP 8, size 4\\ queue (front to rear): 5 7 9 4};
+\end{tikzpicture}
+\caption{A circular queue that has wrapped around. The next \cc{enqueue} writes cell 2.}
+\end{figure}
+
+\begin{note}{Full or empty?}
+Some textbooks store \cc{front} and \cc{rear} instead of \cc{size}. Then
+\cc{front == rear} happens both when the queue is empty and when it is full. The usual
+cure is to leave one cell always unused: the queue is empty when \cc{front == rear} and
+full when \cc{(rear+1)\%CAP == front}, so the capacity is \cc{CAP-1}. Storing the size
+(as here) avoids the problem and uses every cell. Read which convention a question uses
+before you compute ``is it full?''.
+\end{note}
+
+\para{Growing} When the circular buffer is full, a growable version allocates an array
+of twice the size and copies item $i$ to cell $i$ of the new array (not to the same
+index!), so that the wrapped part is straightened; then \cc{front = 0}. As with the
+vector, the cost is $\Theta(1)$ amortised per operation.
+
+\section{Linked implementations}
+
+In a singly linked list with head and tail, removal is $\Theta(1)$ only at the head and
+insertion is $\Theta(1)$ at both ends (Chapter~\ref{ch:linked}). Hence the \emph{front}
+of a linked queue is the \emph{head} and the \emph{rear} is the \emph{tail}: enqueue is
+\cc{pushBack}, dequeue is \cc{popFront}. The opposite orientation would need
+\cc{popBack}, which is $\Theta(n)$. Two details matter:
+\begin{itemize}
+\item dequeueing the last item must also set \cc{tail = NULL}, otherwise the next
+  enqueue writes through a dangling pointer;
+\item enqueueing into an empty queue must set \emph{both} \cc{head} and \cc{tail}.
+\end{itemize}
+The circular list of Section~\ref{sec:circular} gives a queue with a single pointer
+\cc{last} (Listing~\ref{lst:circular}, Tracing~\ref{trace:24}).
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}lccc@{}}\toprule
+ & front at index 0 & circular buffer & linked (head = front)\\\midrule
+\cc{enqueue} & $\Theta(1)$ & $\Theta(1)$ (amortised if growable) & $\Theta(1)$\\
+\cc{dequeue} & $\Theta(n)$ & $\Theta(1)$ & $\Theta(1)$\\
+\cc{front}, \cc{size} & $\Theta(1)$ & $\Theta(1)$ & $\Theta(1)$\\\bottomrule
+\end{tabular}
+\caption{Queue implementations.}
+\end{table}
+
+\section{Queues built from stacks, and stacks from queues}\label{sec:conversions}
+
+\para{A queue from two stacks} Push every new item on a stack \cc{in}. To dequeue, take
+the top of a second stack \cc{out}; if \cc{out} is empty, first pop \emph{all} of
+\cc{in} and push the items onto \cc{out}. The transfer reverses the order, so the oldest
+item ends on top of \cc{out}.
+
+\listingfile[label=lst:twostack]{sol/p43.c}{A queue from two stacks
+(Problem~\ref{prob:43}, Tracing~\ref{trace:12}).}
+
+\begin{theorem}[Two-stack queue]\label{thm:twostack}
+Starting from an empty queue, any sequence of $m$ operations of
+Listing~\ref{lst:twostack} performs at most $4m$ stack operations. Hence each queue
+operation costs $\Theta(1)$ amortised, although a single dequeue may cost $\Theta(n)$.
+\end{theorem}
+\begin{proof}
+Follow one item. It is pushed onto \cc{in} once, popped from \cc{in} once, pushed onto
+\cc{out} once and popped from \cc{out} once: at most four stack operations, because
+items never go back from \cc{out} to \cc{in}. The items are at most $m$ in number, and
+besides moving items each queue operation does $O(1)$ work (one failed pop, one test),
+so the total is $O(m)$.
+\end{proof}
+
+The order is correct because \cc{shift} moves items \emph{only when \cc{out} is empty}.
+Moving whenever \cc{in} is non-empty would place newer items on top of older ones still
+in \cc{out}, and the next dequeue would return a newer item first.
+
+\para{A stack from one queue} After each enqueue of $x$, rotate the $n-1$ older items
+(dequeue and re-enqueue each) so that $x$ is at the front. Then the front is always the
+top: push is $\Theta(n)$, pop and top are $\Theta(1)$ (Problem~\ref{prob:44}). The
+other choice --- push $\Theta(1)$, and pop rotates $n-1$ items to bring the newest to the
+front --- costs the same in total.
+
+\section{Applications}
+
+\subsection{Rotation and the Josephus problem}
+
+Dequeueing an item and enqueueing it again moves it from the front to the rear:
+\emph{a queue is a circle}. In the Josephus problem $n$ people stand in a circle,
+numbered $1..n$; counting starts at person 1, and every $k$-th person leaves the circle.
+Which one remains? Simulate: rotate $k-1$ people, then remove the next.
+
+\listingfile[label=lst:josephus]{sol/p45.c}{Josephus by simulation, $\Theta(nk)$, and by
+the recurrence, $\Theta(n)$ (Problem~\ref{prob:45}).}
+
+\begin{proposition}[Josephus recurrence]
+Number the positions $0..i-1$, starting at the person where counting begins, and let
+$J(i)$ be the position of the survivor among $i$ people. Then $J(1)=0$ and
+$J(i)=\bigl(J(i-1)+k\bigr)\bmod i$ for $i\ge2$.
+\end{proposition}
+\begin{proof}
+With $i$ people the first person removed is at position $(k-1)\bmod i$. Counting
+restarts at the next person, position $k\bmod i$; renumber the remaining $i-1$ people
+from there. The person with new number $p$ had old number $(p+k)\bmod i$. The survivor
+has new number $J(i-1)$, hence old number $(J(i-1)+k)\bmod i$.
+\end{proof}
+For $n=7$, $k=3$ the removal order is $3,6,2,7,5,1$ and the survivor is $4$; the
+recurrence gives $J=0,1,1,0,3,0,3$ for $i=1..7$, and $J(7)+1=4$.
+
+\subsection{Sliding windows over a stream}
+
+When items arrive in time order and only those of the last $w$ time units matter, the
+items that expire are always the \emph{oldest}: they leave from the front, new ones join
+at the rear. The queue holds exactly the current window (\emph{recent counter},
+Problem~\ref{prob:47}). For a window of $k$ consecutive array positions, a queue of
+\emph{indices} of interesting items suffices; an index leaves when it falls out of the
+window (\emph{first negative in each window}, Problem~\ref{prob:49}). Each index enters
+and leaves once, so the total cost is $\Theta(n)$, as for the monotonic stack.
+
+When the question is the \emph{maximum} or \emph{minimum} of each window, items must
+also leave from the \emph{rear}: this needs a deque (Section~\ref{sec:monodeque}).
+
+\subsection{Combining a queue with a stack}
+
+A stack reverses, a queue preserves order. Pouring part of a queue into a stack and back
+reverses that part. Reversing the first $k$ items of a queue
+(Problem~\ref{prob:46}): dequeue $k$ items onto a stack, pop them back into the queue
+(now they are reversed, but at the rear), then rotate the remaining $n-k$ items once
+around. Interleaving the two halves of a queue (Problem~\ref{prob:48}) is solved the
+same way with a few more passes. In such problems, remember that \cc{qSize(\&q)}
+\emph{changes} while the loop runs: read it into a variable first.
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}p{0.42\linewidth}p{0.51\linewidth}@{}}\toprule
+If the problem says \dots & think of \dots\\\midrule
+in order of arrival, first come first served, round robin & a plain queue\\
+every $k$-th, circle, rotate & dequeue + enqueue (\ref{prob:45})\\
+last $w$ milliseconds, recent, expire & queue of time stamps (\ref{prob:47})\\
+something about each window of size $k$ & queue of indices (\ref{prob:49}); deque if min/max (\ref{prob:53})\\
+reverse part of a queue & a stack as helper (\ref{prob:46})\\
+implement X using only Y & Section~\ref{sec:conversions} (\ref{prob:43}, \ref{prob:44})\\\bottomrule
+\end{tabular}
+\caption{Recognising a queue problem.}
+\end{table}

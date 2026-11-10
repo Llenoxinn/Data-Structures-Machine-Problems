@@ -1,0 +1,119 @@
+\section{Arrays and array lists}
+
+\solution{Problem}{1}
+\idea Read the string run by run: remember the current character, count how far it
+repeats, then write the character and the count. A count can have several digits; find
+how many by repeated division by 10, then fill the digits \emph{from the right}, because
+\cc{run \% 10} produces the last digit first. \cc{compress} works in place because the
+write position never overtakes the read position: a run of length $r\ge2$ occupies $r$
+cells and is replaced by $1+\lfloor\log_{10}r\rfloor+1\le r$ cells.
+\listingfile{sol/p01.c}{Run-length encoding, in-place compression and decoding.}
+\complexity $\Theta(n)$ time: each input character is read once and each output character
+written once. \cc{compress} uses $O(1)$ extra space.
+\mistakes Writing the count as a single character (\cc{'0'+run}), which breaks for runs of
+10 or more; writing the digits in reverse; forgetting the terminating \cc{'\textbackslash
+0'} in \cc{rleEncode}; in \cc{compress}, writing the count \cc{1} for single
+characters, or testing \cc{a[r]==c} without \cc{r<n}.
+
+\solution{Problem}{2}
+\idea $t_{ji}=a_{ij}$ is a direct double loop. In place, swap $a_{ij}$ and $a_{ji}$ for
+the cells \emph{above the diagonal} only ($j>i$): visiting every pair twice swaps each
+pair back and leaves the matrix unchanged.
+\listingfile{sol/p02.c}{Transpose.}
+\complexity $\Theta(nm)$ and $\Theta(n^2)$ time; $O(1)$ extra space in place.
+\mistakes Looping $j$ from 0 in the in-place version (double swap); mixing up $n$ and $m$
+in the bounds of the rectangular case.
+
+\solution{Problem}{3}
+\idea The sum $1+2+\dots+(m+1)=(m+1)(m+2)/2$ is known; subtracting the sum of the array
+leaves the missing number. For the bonus, note that before the gap $a[i]=i+1$ and from the
+gap on $a[i]=i+2$: the predicate ``$a[i]\ne i+1$'' is false\ldots false true\ldots true, so
+bisection finds the first index where it holds.
+\listingfile{sol/p03.c}{The missing number, linear and logarithmic.}
+\complexity $\Theta(m)$ and $\Theta(\log m)$ time; $O(1)$ space.
+\mistakes Using $m(m+1)/2$ (the range has $m+1$ numbers); in the bisection, initialising
+\cc{hi=m-1}, which misses the case where the missing number is $m+1$.
+
+\solution{Problem}{4}
+\idea \cc{lowerBound} and \cc{upperBound} are the bisection of Section~\ref{sec:bsearch}
+with \cc{<} and \cc{<=}. Then \cc{search} is a lower bound plus one check, \cc{count} is
+the difference of the two bounds, \cc{insert} opens a gap at the upper bound (so equal
+items keep their arrival order), and \cc{erase} closes the gap at the lower bound.
+\listingfile{sol/p04.c}{A sorted array list.}
+\complexity Bounds, \cc{search}, \cc{count}: $\Theta(\log n)$. \cc{insert}, \cc{erase}:
+$\Theta(\log n)$ comparisons plus up to $n$ moves, $\Theta(n)$.
+\mistakes Reading \cc{items[p]} when $p=\cc{size}$ (not found and larger than every
+item); shifting in the wrong direction (left-to-right when opening a gap overwrites every
+item with the same value); counting by a linear scan from the lower bound, which is
+$\Theta(n)$ when all items are equal.
+
+\solution{Problem}{5}
+\idea Reduce $k$ modulo $n$. Rotating right by $k$ moves the last $k$ items to the front.
+Reverse the whole array, then reverse the first $k$ items and the remaining $n-k$ items
+separately; each block is now in its original order but the blocks have swapped places.
+\listingfile{sol/p05.c}{Rotation by three reversals.}
+\complexity $\Theta(n)$ time (each item is swapped at most twice), $O(1)$ space.
+\mistakes Forgetting \cc{k \% n} ($k$ may be $10^9$); computing \cc{k \% n} when $n=0$
+(division by zero); rotating left instead of right (reversing the blocks in the other
+order).
+
+\solution{Problem}{6}
+\idea Two indices walk through \cc{a} and \cc{b}; at each step the smaller front item is
+copied. Comparing with \cc{<=} copies \cc{a}'s item on ties (stability). When one array
+is exhausted, the rest of the other is copied.
+\listingfile{sol/p06.c}{Merging two sorted arrays.}
+\complexity $\Theta(n+m)$: each item is copied once.
+\mistakes Forgetting the two tail loops; using \cc{<} (the order of equal items is then
+\cc{b} first, which the statement forbids).
+
+\solution{Problem}{7}
+\idea Keep a write index $w$: \cc{a[0..w-1]} holds the distinct values seen so far. Since
+the array is sorted, a value is new exactly when it differs from \cc{a[w-1]}.
+\listingfile{sol/p07.c}{Remove duplicates from a sorted array.}
+\complexity $\Theta(n)$ time, $O(1)$ space.
+\mistakes Comparing with \cc{a[r-1]} instead of \cc{a[w-1]} (works here, but not for the
+``at most two copies'' variant); not handling $n=0$.
+
+\solution{Problem}{8}
+\idea Two pointers from both ends. If the sum is too small, only a larger left item can
+help: \cc{lo++}. If it is too large, \cc{hi--}. No pair is skipped: when \cc{lo} moves,
+\cc{a[lo]} could only pair with indices $\le\cc{hi}$, all of which give too small a sum.
+\listingfile{sol/p08.c}{Two-sum in a sorted array.}
+\complexity $\Theta(n)$ time, $O(1)$ space (the double loop is $\Theta(n^2)$).
+\mistakes The condition \cc{lo<=hi}, which may use the same index twice; moving both
+pointers at once.
+
+\solution{Problem}{9}
+\idea Kadane's algorithm. Let $E_i$ be the best sum of a subarray \emph{ending} at $i$.
+Either it extends the best one ending at $i-1$, or it starts afresh at $i$:
+$E_i=a_i+\max(E_{i-1},0)$. The answer is $\max_iE_i$.
+\listingfile{sol/p09.c}{Maximum subarray sum, $\Theta(n)$ and $\Theta(n^2)$.}
+\complexity $\Theta(n)$ time, $O(1)$ space.
+\mistakes Initialising \cc{best = 0}, which returns 0 for an all-negative array (the
+subarray must be non-empty); resetting to 0 instead of to \cc{a[i]}.
+
+\solution{Problem}{10}
+\idea Copy every non-zero item to the next write position (a stable compaction), then fill
+the rest with zeros.
+\listingfile{sol/p10.c}{Move zeroes.}
+\complexity $\Theta(n)$ time, $O(1)$ space.
+\mistakes Swapping a zero with the \emph{last} item, which destroys the order; using a
+second array.
+
+\solution{Problem}{11}
+\idea Boyer--Moore voting. Pair off two different items and discard both: the majority
+item, which occurs more than half the time, cannot be paired off completely, so it
+survives. The variable \cc{votes} is the number of unpaired copies of \cc{candidate}.
+\listingfile{sol/p11.c}{Majority element.}
+\complexity $\Theta(n)$ time, $O(1)$ space; the counting version is $\Theta(n^2)$.
+\mistakes Assuming the most frequent item is the answer when no majority is guaranteed
+(then a second pass must verify the candidate).
+
+\solution{Problem}{12}
+\idea A clockwise rotation sends $(i,j)$ to $(j,n-1-i)$. That is the transpose
+$(i,j)\mapsto(j,i)$ followed by the reflection of each row $(j,i)\mapsto(j,n-1-i)$; both
+are in-place swaps.
+\listingfile{sol/p12.c}{Rotating a matrix by $90^\circ$ clockwise.}
+\complexity $\Theta(n^2)$ time, $O(1)$ space.
+\mistakes Reversing the columns instead of the rows (counter-clockwise rotation);
+transposing with $j$ from 0.

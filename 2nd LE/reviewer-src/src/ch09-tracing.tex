@@ -1,0 +1,150 @@
+\chapter{Section B: Tracing Problems}\label{ch:tracing}
+
+Determine the exact output of each program, including spaces and line breaks. Each one
+hides at least one trap; the most common are listed in the checklist below. Unless
+stated, the code compiles and runs without error. Programs that rely on a library of
+Part~I (\cc{stackqueue.h}, \cc{deque.h}, \cc{sll.h}, \cc{dll.h}, \cc{circular.c}) or on
+the solution of a problem of Chapter~\ref{ch:problems} say so, and the behaviour of the
+functions they call is stated before the program. The headers \cc{stdio.h} and
+\cc{stdlib.h} are included everywhere and not shown.
+
+\para{Tracing checklist} (i)~Evaluation order of function arguments is unspecified; the
+programs here use sequential statements to avoid it. (ii)~Pass by value copies a struct
+including an embedded array, but a pointer member still points to the same nodes.
+(iii)~A loop bound such as \cc{i<=n} or \cc{i<size-1} changes the count by one.
+(iv)~\cc{printf} adds nothing: look for trailing spaces and \cc{\textbackslash n}.
+(v)~Integer division truncates toward zero, and \cc{\%} keeps the sign of the left
+operand. (vi)~A failed \cc{pop} of the course library returns 0 and leaves its output
+variable \emph{unchanged}. (vii)~Keep a table with one column per variable and one row
+per step; do not trace in your head.
+
+\tracing{1}{Array list, return values and stale cells}
+A bounded array list with capacity 5 and 1-based \cc{setItem} and \cc{itemAt}. Give the
+exact output of the program.
+\programfile{tracing/t01.c}
+
+\tracing{2}{What does the callee really change?}
+Three structs are passed by value, by pointer and as a raw array. For each of the lines
+\cc{A}--\cc{E} state what is printed.
+\programfile{tracing/t02.c}
+
+\tracing{3}{Counting loop iterations}
+Give the six counters. Then state each count as a function of $n$ in $\Theta$-notation.
+\programfile{tracing/t03.c}
+
+\tracing{4}{The raw array after erase and insert}
+The class prints its \emph{whole} array, including the cells beyond \cc{size}. Positions
+are 0-based.
+\programfile[language=C++]{tracing/t04.cpp}
+
+\tracing{5}{Circular queue: wrap-around}
+A circular queue of capacity 4. \cc{show} prints the fields and the raw array.
+\programfile{tracing/t05.c}
+
+\tracing{6}{SLL with head, tail and size}
+The program uses \cc{sll.h} (Listing~\ref{lst:sll}) and \cc{popFront}/\cc{popBack} of
+Listing~\ref{lst:sllpop}: each pop returns 1 and stores the removed item in \cc{*x}, or
+returns 0 and leaves \cc{*x} unchanged when the list is empty. \cc{sdisplay} prints the
+list as \cc{[3 5]}. \cc{\%-11s} pads the operation name to 11 characters.
+\programfile{tracing/t06.c}
+
+\tracing{7}{One star or two?}
+\programfile{tracing/t07.c}
+
+\tracing{8}{Erasing from a doubly linked list}
+The program uses \cc{dll.h} (Listing~\ref{lst:dll}: \cc{display} prints the items
+separated by spaces and a newline; \cc{displayBackward} prints them from the tail) and
+\cc{eraseItems(list *l, int x)} of Problem~\ref{prob:13}, which removes \emph{every} node
+holding \cc{x}. The departmental output format ends each item with a space.
+\programfile{tracing/t08.c}
+
+\tracing{9}{Recursion on a list}
+The lists are built with a pointer to the last \cc{next} field. Give the three lines.
+\programfile{tracing/t09.c}
+
+\tracing{10}{Stacks and queues in the same function}
+The program uses \cc{stackqueue.h} (Listings~\ref{lst:stack} and~\ref{lst:queue}): every
+pop, dequeue, top or front returns 0 and leaves its output variable unchanged when the
+structure is empty.
+\programfile{tracing/t10.c}
+
+\tracing{11}{Infix to postfix with a depth counter}
+A variant of the shunting-yard algorithm on letters. Give the output string and the
+maximum size the operator stack reaches.
+\programfile{tracing/t11.c}
+
+\tracing{12}{A queue from two stacks}
+Give the output, and state how many items are moved from \cc{in} to \cc{out} in total.
+\programfile{tracing/t12.c}
+
+\tracing{13}{Which operand is popped first?}
+Both functions evaluate a postfix expression of single digits with integer division.
+They differ only in the order of the two pops. Give the table.
+\programfile{tracing/t13.c}
+
+\tracing{14}{Stack permutations}
+\cc{produce} tries to pop the numbers in the order \cc{want[]} while pushing
+$1,2,3,4$ in order. Give the five lines and the count.
+\programfile{tracing/t14.c}
+
+\tracing{15}{The stock spanner}
+The program uses \cc{stockSpanner} of Problem~\ref{prob:37}: \cc{ssNext} pops every
+(price, span) pair whose price is $\le$ today's price, adds their spans to 1, and pushes
+today's pair. \cc{show} prints the pairs from bottom to top.
+\programfile{tracing/t15.c}
+
+\tracing{16}{The mid-pointer list}
+The program uses \cc{mlist} of Problem~\ref{prob:24}: a singly linked list with
+\cc{head}, \cc{mid}, \cc{tail} and \cc{size}, where \cc{middle(l)} returns the item at
+index $\lfloor(\cc{size}-1)/2\rfloor$. Give the \cc{mid} column; the list contents follow
+from the operations.
+\programfile{tracing/t16.c}
+
+\tracing{17}{Binary search: counting the steps}
+\cc{lowerBound} returns the index of the first item $\ge x$ on the half-open range
+$[\cc{lo},\cc{hi})$.
+\programfile{tracing/t17.c}
+
+\tracing{18}{Josephus with a twist}
+Six people, every third one leaves. Give the order of removal and the winner, and check
+the winner with the recurrence of Chapter~\ref{ch:queues}.
+\programfile{tracing/t18.c}
+
+\tracing{19}{Splicing lists}
+The program uses \cc{sll.h} and the two functions of Problem~\ref{prob:18}:
+\cc{spliceAfter(l, p, m)} moves all nodes of \cc{m} after node \cc{p} of \cc{l}, and
+\cc{splice(l, pos, m)} moves them so that the first one becomes item \cc{pos} of \cc{l}
+($0\le\cc{pos}\le\cc{l->size}$; it returns 0 and does nothing for an invalid
+\cc{pos}). Both leave \cc{m} empty.
+\programfile{tracing/t19.c}
+
+\tracing{20}{Shallow and deep copies}
+\programfile{tracing/t20.c}
+
+\tracing{21}{Circular deque: the raw array}
+A circular deque of capacity 5. \cc{pushFront} steps the front back by adding 4 instead
+of subtracting 1. The last line prints three C expressions.
+\programfile{tracing/t21.c}
+
+\tracing{22}{ArrayDeque: which side moves?}
+Positional insertion in a circular array of capacity 8 that moves the shorter side.
+\cc{add} returns the number of items moved.
+\programfile{tracing/t22.c}
+
+\tracing{23}{Sliding window maximum}
+The program uses \cc{deque.h} (Listing~\ref{lst:deque}) and prints the deque of indices
+after each step of the algorithm of Problem~\ref{prob:53}. Give the eight lines. Watch the
+\emph{two} equal values.
+\programfile{tracing/t23.c}
+
+\tracing{24}{A circular list as a queue}
+The program uses Listing~\ref{lst:circular}: \cc{enq(\&last, x)} links a new node after
+\cc{last} and makes it the new \cc{last}; \cc{deq(\&last, \&x)} removes \cc{last->next}
+(the front), stores its item in \cc{x} and returns 1, or returns 0 when the list is empty.
+The main program also moves the pointer by hand.
+\programfile{tracing/t24.c}
+
+\tracing{25}{The sentinel deque, and a struct copy}
+The program uses the linked deque of Problem~\ref{prob:51} (Listing~\ref{lst:linkeddeque}).
+Print 1 for true and 0 for false in the comparisons.
+\programfile{tracing/t25.c}

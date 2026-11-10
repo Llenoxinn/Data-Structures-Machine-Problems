@@ -1,0 +1,170 @@
+\section{Deques}\label{sec:probdeques}
+
+``Deque operations only'' means \cc{dqInit}, \cc{dqPushFront}, \cc{dqPushBack},
+\cc{dqPopFront}, \cc{dqPopBack}, \cc{dqFront}, \cc{dqBack}, \cc{dqEmpty}, \cc{dqSize} of
+Listing~\ref{lst:deque}. The deque has capacity 100; in the window problems it holds at
+most $k\le100$ indices.
+
+\problem{50}{Design a circular deque}{Medium}
+Implement a deque of capacity $k$ in a circular array. The insert and delete operations
+return 1 on success and 0 if the deque is full (insert) or empty (delete);
+\cc{cdGetFront} and \cc{cdGetRear} return $-1$ if the deque is empty.
+\begin{lstlisting}[style=starter]
+typedef struct { int items[1000]; int cap; int front; int size; } circularDeque;
+void cdInit(circularDeque *d, int k);
+int cdInsertFront(circularDeque *d, int x);
+int cdInsertLast(circularDeque *d, int x);
+int cdDeleteFront(circularDeque *d);
+int cdDeleteLast(circularDeque *d);
+int cdGetFront(circularDeque *d);
+int cdGetRear(circularDeque *d);
+int cdIsEmpty(circularDeque *d);
+int cdIsFull(circularDeque *d);
+\end{lstlisting}
+\permitted Array access to the fields.
+\constraints $1\le k\le1000$.
+\required Every operation $O(1)$; no shifting.
+\begin{tests}
+k=3: insertLast 1, insertLast 2, insertFront 3, insertFront 4 & 1, 1, 1, 0\\
+getRear, isFull, deleteLast, insertFront 4, getFront & 2, 1, 1, 1, 4\\
+k=1: getFront, insertFront 7, insertLast 8, getRear & -1, 1, 0, 7\\
+\end{tests}
+
+\problem{51}{A linked deque with a sentinel}{Medium}
+Implement a deque on a circular doubly linked list with one sentinel node stored inside
+the struct: \cc{sentinel.next} is the first item and \cc{sentinel.prev} the last; when
+the deque is empty both point to the sentinel. Write the two helpers first and implement
+the six operations with them, without any \cc{if} that tests for \cc{NULL}.
+\begin{lstlisting}[style=starter]
+typedef struct dqnode { int item; struct dqnode *prev, *next; } dqnode;
+typedef struct { dqnode sentinel; int size; } linkedDeque;
+void ldInit(linkedDeque *d);
+int ldLinkBetween(linkedDeque *d, dqnode *a, dqnode *b, int x);
+void ldUnlink(linkedDeque *d, dqnode *n, int *x);
+int ldPushFront(linkedDeque *d, int x);   int ldPushBack(linkedDeque *d, int x);
+int ldPopFront(linkedDeque *d, int *x);   int ldPopBack(linkedDeque *d, int *x);
+int ldFront(linkedDeque *d, int *x);      int ldBack(linkedDeque *d, int *x);
+void ldFree(linkedDeque *d);
+\end{lstlisting}
+\permitted \cc{malloc}, \cc{free}, pointer manipulation.
+\required Every operation $O(1)$ (\cc{ldFree}: $O(n)$); no leaks.
+\bonus Explain why \cc{linkedDeque e = d;} produces a broken deque.
+\begin{tests}
+pushBack 1, pushBack 2, pushFront 0 & 0 1 2\\
+popBack, popFront & 2, 0\\
+front, back & 1, 1\\
+popBack, popBack & 1, fails\\
+\end{tests}
+
+\problem{52}{Valid palindrome}{Easy}
+Return 1 if the string \cc{s} reads the same forwards and backwards when only its letters
+and digits are kept and upper case is treated as lower case; else 0.
+\begin{lstlisting}[style=starter]
+int isPalindromeText(char s[]);
+\end{lstlisting}
+\permitted Character reads of \cc{s}; deque operations. No \cc{ctype.h} (write the tests
+yourself).
+\constraints $1\le|s|\le100$ letters and digits after filtering (the deque has capacity
+100).
+\required $O(n)$ time.
+\bonus $O(1)$ extra space with two indices instead of a deque.
+\begin{tests}
+A man, a plan, a canal: Panama & 1\\
+race a car & 0\\
+{" "} (one space) & 1\\
+0P & 0\\
+Was it a car or a cat I saw? & 1\\
+\end{tests}
+
+\problem{53}{Sliding window maximum}{Medium}
+For every window \cc{a[i..i+k-1]} write its maximum into \cc{out}; return the number of
+windows, $n-k+1$.
+\begin{lstlisting}[style=starter]
+int maxSlidingWindow(int a[], int n, int k, int out[]);
+\end{lstlisting}
+\permitted Array access to \cc{a} and \cc{out}; one deque.
+\constraints $1\le k\le n\le10^5$, $k\le100$.
+\required $O(n)$ time ($O(nk)$ earns partial credit).
+\begin{tests}
+{}[1,3,-1,-3,5,3,6,7], k=3 & [3,3,5,5,6,7]\\
+{}[1], k=1 & [1]\\
+{}[9,1,8,2,7,3], k=2 & [9,8,8,7,7]\\
+{}[4,2,12,3,8,8,1,5], k=3 & [12,12,12,8,8,8]\\
+\end{tests}
+
+\problem{54}{Longest subarray with absolute difference at most a limit}{Medium}
+Return the length of the longest non-empty contiguous subarray in which the difference
+between the largest and the smallest item is at most \cc{limit}.
+\begin{lstlisting}[style=starter]
+int longestSubarray(int a[], int n, int limit);
+\end{lstlisting}
+\permitted Array reads; two deques.
+\constraints $1\le n\le10^5$, $0\le\mathit{limit}$; no valid window is longer than 100.
+\required $O(n)$ time.
+\begin{tests}
+{}[8,2,4,7], limit 4 & 2\\
+{}[10,1,2,4,7,2], limit 5 & 4 ([2,4,7,2])\\
+{}[4,2,2,2,4,4,2,2], limit 0 & 3\\
+\end{tests}
+
+\problem{55}{Front-middle-back queue}{Medium}
+Design a queue that supports \cc{push} and \cc{pop} at the front, in the middle and at
+the back. When there are two middle positions, the \emph{front-most} one is used:
+\cc{pushMiddle} inserts so that the new item becomes item $\lfloor n/2\rfloor$ (0-based,
+$n$ the size before), and \cc{popMiddle} removes item $\lfloor(n-1)/2\rfloor$. The pops
+return the removed item, or $-1$ if the queue is empty.
+\begin{lstlisting}[style=starter]
+typedef struct { deque left; deque right; } fmbQueue;
+void fmbInit(fmbQueue *q);
+void fmbPushFront(fmbQueue *q, int x);
+void fmbPushMiddle(fmbQueue *q, int x);
+void fmbPushBack(fmbQueue *q, int x);
+int fmbPopFront(fmbQueue *q);
+int fmbPopMiddle(fmbQueue *q);
+int fmbPopBack(fmbQueue *q);
+\end{lstlisting}
+\permitted Deque operations on the two member deques.
+\required Every operation $O(1)$.
+\begin{tests}
+pushFront 1, pushBack 2, pushMiddle 3, pushMiddle 4 & queue [1,4,3,2]\\
+popFront, popMiddle, popMiddle, popBack, popFront & 1, 3, 4, 2, -1\\
+\end{tests}
+
+\problem{56}{ArrayDeque: positional insertion and removal}{Medium}
+In the ArrayDeque of the course notes, item $i$ ($0\le i<n$) lives at
+\cc{a[(j+i) \% 100]}. Implement \cc{adAdd(d, i, x)}, which inserts $x$ so that it becomes
+item $i$, and \cc{adRemove(d, i, \&x)}, which removes item $i$. Each must move the
+\emph{shorter} side of the deque: the items before position $i$ (moving \cc{j}) or the
+items after it.
+\begin{lstlisting}[style=starter]
+typedef struct { int a[100]; int j; int n; } arrayDeque;
+void adInit(arrayDeque *d);
+int adGet(arrayDeque *d, int i);
+int adAdd(arrayDeque *d, int i, int x);       // 0 on failure
+int adRemove(arrayDeque *d, int i, int *x);   // 0 on failure
+\end{lstlisting}
+\permitted Array access to the fields.
+\required $O(1+\min(i,n-i))$ time per operation.
+\begin{tests}
+add(0,1), add(1,2), add(2,3), add(0,0) & [0,1,2,3]\\
+add(2,9) & [0,1,9,2,3]\\
+remove(1); get(2) & returns 1, [0,9,2,3]; 2\\
+add(5,7); remove(3) & fails; returns 3, [0,9,2]\\
+\end{tests}
+
+\problem{57}{Jump game VI}{Medium}
+You start on index 0 of the array \cc{a} and must reach index $n-1$. From index $i$ you
+may jump to any index $i+1,\dots,i+k$ (inside the array). Your score is the sum of
+\cc{a[j]} over all indices $j$ you land on, including the first and the last. Return the
+maximum score.
+\begin{lstlisting}[style=starter]
+int maxResult(int a[], int n, int k);
+\end{lstlisting}
+\permitted Array access; one deque.
+\constraints $1\le n\le10^4$, $1\le k\le98$, $|a[i]|\le10^4$.
+\required $O(n)$ time ($O(nk)$ earns partial credit).
+\begin{tests}
+{}[1,-1,-2,4,-7,3], k=2 & 7 (path 1, -1, 4, 3)\\
+{}[10,-5,-2,4,0,3], k=3 & 17\\
+{}[1,-5,-20,4,-1,3,-6,-3], k=2 & 0\\
+\end{tests}

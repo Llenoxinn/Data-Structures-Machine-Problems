@@ -1,0 +1,26 @@
+\chapter{Section C: Problem Solving}\label{ch:problems}
+
+There are 57 problems in five groups. Every problem is of Easy or Medium difficulty and
+is written in the style of an online judge: you are given a structure and asked to
+implement one operation on it. Each statement shows the function to complete (the
+starter code), the constraints, the permitted operations, the required complexity, an
+optional bonus for doing better, and sample tests. The code is plain C/C++: no global
+variables, no \cc{static} and no \cc{const} are needed anywhere, and the solutions in
+Chapter~\ref{ch:solproblems} follow the same rule.
+
+\para{Interfaces assumed throughout} Array list: \cc{items[]} and \cc{size}. SLL:
+Listing~\ref{lst:sll} (\cc{snode}, \cc{sll} with \cc{head}, \cc{tail}, \cc{size}). DLL:
+Listing~\ref{lst:dll} (\cc{node}, \cc{list}). Stack and queue: Listings~\ref{lst:stack}
+and~\ref{lst:queue} (\cc{stInit}, \cc{stPush}, \cc{stPop}, \cc{stTop}, \cc{stEmpty},
+\cc{stSize}; \cc{qInit}, \cc{qEnq}, \cc{qDeq}, \cc{qFront}, \cc{qEmpty}, \cc{qSize}).
+Deque: Listing~\ref{lst:deque} (\cc{dqInit}, \cc{dqPushFront}, \cc{dqPushBack},
+\cc{dqPopFront}, \cc{dqPopBack}, \cc{dqFront}, \cc{dqBack}, \cc{dqEmpty}, \cc{dqSize}).
+Every pop, top, front and back returns 1 on success and 0 when the structure is empty,
+and passes the item through an \cc{int *}. When a problem names a function, use exactly
+that signature; when it forbids an operation, even a correct use of it forfeits credit.
+
+\input{ch10a-arrays}
+\input{ch10b-linked}
+\input{ch10c-stacks}
+\input{ch10d-queues}
+\input{ch10e-deques}

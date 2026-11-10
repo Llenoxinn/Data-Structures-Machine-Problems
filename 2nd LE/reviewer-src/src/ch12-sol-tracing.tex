@@ -1,0 +1,202 @@
+\chapter{Solutions to Section B}\label{ch:soltracing}
+
+Each box is the real output of the program, captured when the book was built.
+
+\solution{Tracing}{1}
+\outputfile{t01}
+The three appends succeed: $r=3$. Both front insertions succeed, $r=1\cdot10+1=11$. The
+list is now full, so \cc{append(\&l,42)} returns 0. \cc{removeLast} only decrements
+\cc{size}; \cc{removeFirst} shifts left, leaving the raw array \cc{[16 4 8 8 15]} with
+size 3. \cc{setItem(\&l,99,3)} is valid; position 4 exceeds the size and fails.
+\emph{Twist:} \cc{itemAt} does not check its position, so \cc{itemAt(l,4)} reads the
+stale cell \cc{items[3]}, which still holds 8. After \cc{append(\&l,5)} the same cell
+holds 5.
+
+\solution{Tracing}{2}
+\outputfile{t02}
+A: the struct (with its array) was copied; the caller sees nothing. B: through the
+pointer, both fields change. C: \cc{a.items} decays to a pointer to the caller's array,
+so \cc{items[0]} changes but \cc{size} cannot. D: the same for a plain array.
+E: \cc{llByValue} receives a copy of \cc{head} and \cc{size}; resetting them affects only
+the copy, but \cc{l.head->item = 100} writes into the \emph{shared} first node.
+
+\solution{Tracing}{3}
+\outputfile{t03}
+$c_1=n^2=256$. $c_2=1+2+\dots+n=n(n+1)/2=136$. $c_3$: the outer loop runs for
+$i=1,2,4,8$, that is $\lg n=4$ times, so $4\cdot16=64=n\lg n$. $c_4$: $i=16,8,4,2,1$, five
+times $=\lg n+1$. $c_5$: for each $i$ the inner loop runs $\lceil(16-i)/4\rceil$ times;
+$4(4+3+2+1)=40$, which is $\Theta(n^2)$ (about $n^2/8$). $c_6=1+2+4+8=15=n-1$:
+\emph{twist} --- a doubling outer loop whose inner loop runs $i$ times is $\Theta(n)$,
+not $\Theta(n\log n)$.
+
+\solution{Tracing}{4}
+\outputfile{t04}
+\cc{erase(1)} copies each item one cell left but does not clear the old last cell, so
+\cc{60} appears twice in the raw array. \cc{insert(3,99)} overwrites that stale copy
+when shifting right. \cc{erase(5)} removes the real 60 ($r=1$); the second
+\cc{erase(5)} fails because now $\cc{size}=5$ ($r=1+0=1$). The raw array is unchanged by
+the size decrement. Two front insertions shift everything. \emph{Twist:} both later
+inserts fail --- \cc{insert(9,1)} because $9>\cc{size}$, and \cc{insert(8,1)} because
+$8>7=\cc{size}$, even though the array still has one free cell.
+
+\solution{Tracing}{5}
+\outputfile{t05}
+The removal only advances \cc{j}; the 1 stays in cell 0. Adding 4 and 5 fills cells 3
+and then 0 (wrap-around). The queue is then full and \cc{add(\&q,6)} returns 0. Two
+removals take 2 and 3; \cc{j} becomes 3. Then 7 and 8 go to cells $(3+2)\bmod4=1$ and
+$2$. The final loop prints the queue in queue order (4 5 7 8), not array order.
+\emph{Twist:} after the queue is emptied, \cc{show} still prints the old values; only
+\cc{n} says the queue is empty.
+
+\solution{Tracing}{6}
+\outputfile{t06}
+\cc{popBack} walks from the head to the node before the tail; the second \cc{popBack}
+leaves one node, which is both head and tail. \cc{popFront} on the one-node list must
+reset \emph{both} pointers to \cc{NULL}. \emph{Twist:} the failed \cc{popFront} returns 0
+and leaves \cc{x} at the last value successfully popped, 3.
+
+\solution{Tracing}{7}
+\outputfile{t07}
+\cc{appendA} receives a copy of the head pointer. On an empty list it stores the new node
+in that copy only: \cc{a} stays \cc{NULL} and the node leaks, three times. \cc{appendB}
+receives the address of the caller's pointer and works. \emph{Twist:} once the list is
+non-empty (\cc{c} starts with 7), \cc{appendA} works as well, since it modifies the
+\cc{next} field of a shared node: both lists have length 4.
+
+\solution{Tracing}{8}
+\outputfile{t08}
+Removing all 2's removes the first two nodes (the head changes twice), the one in the
+middle, and the last two (the tail changes twice); \cc{5 7} remain and the backward
+display shows that the \cc{prev} links are right. Erasing a missing value changes nothing.
+After removing 7, the single node 5 is both head and tail and its \cc{prev} is
+\cc{NULL}. Removing it empties the list: both pointers are \cc{NULL}.
+
+\solution{Tracing}{9}
+\outputfile{t09}
+\cc{mystery} prints each item on the way down, \cc{\#} at the end, and each item again
+on the way back: the list forwards and then backwards. \cc{g} adds the even items and
+subtracts 1 for every odd item: $2+4-2=4$ and $2+8+6-3=13$. \cc{h} counts the positions
+where an item is smaller than its successor: $1<2<3<4$ gives 3; in
+$3,5,2,8,6,9$ the ascents are $3<5$, $2<8$, $6<9$: also 3.
+
+\solution{Tracing}{10}
+\outputfile{t10}
+Line 1: the stack gives its newest item 3, the queue its oldest 10. Then 3 joins the
+queue (\cc{[20 3]}) and 10 the stack (\cc{[1 2 10]}). Line 2: three pops succeed (10, 2,
+1) and the fourth fails: $r=3$ and \cc{x} keeps 1. Line 3: two dequeues succeed (20, 3):
+$r=2$, \cc{y}$=3$. Last line: 4 and 5 go stack $\to$ queue (\cc{5 4}) $\to$ stack
+(top 4). \emph{Twist:} two reversals cancel, so the items come out in push order.
+
+\solution{Tracing}{11}
+\outputfile{t11}
+The stack grows to \cc{+ * ( -} (depth 4) inside the parentheses. At \cc{)} the \cc{-} is
+output and \cc{(} discarded. At \cc{/} the \cc{*} has equal precedence and leaves first.
+\emph{Twist:} \cc{prec('(')} is 0, so the operator loop stops at a parenthesis without an
+explicit test.
+
+\solution{Tracing}{12}
+\outputfile{t12}
+The first dequeue moves 1, 2, 3 to \cc{out}. The dequeues of 2 and 3 need no transfer,
+although 4, 5, 6 are waiting in \cc{in}. Only when \cc{out} is empty again are 4, 5, 6
+moved. In total each item is moved once: \emph{6} moves for 6 items. The last dequeue
+finds both stacks empty and returns $-1$.
+
+\solution{Tracing}{13}
+\outputfile{t13}
+\cc{evalB} computes $b\ \mathrm{op}\ a$ with the operands swapped. For \cc{+} and
+\cc{*} the error is invisible. For \cc{93-} it gives $3-9=-6$; for \cc{82/} it gives
+$2/8=0$. In \cc{27-3/}, \cc{evalA} computes $(2-7)/3=-5/3=-1$ (truncation toward
+zero, not $-2$), while \cc{evalB} computes $3/(7-2)=0$. The errors compound: for
+\cc{92-3-}, \cc{evalB} gives $3-(2-9)=10$.
+
+\solution{Tracing}{14}
+\outputfile{t14}
+\cc{3 2 1 4}: push three, pop three, push, pop. \cc{1 2 3 4}: alternate. \cc{3 1 2 4}:
+after 3 is printed, 2 is on top and 1 is below it, so the function pushes 4 (one more
+\cc{u}) and then has nothing left to push: stuck with top 4. This is the forbidden
+pattern $3,1,2$. \cc{2 4 3 1} works. \cc{4 1 2 3}: after 4 the top is 3 and 1 is
+buried. Three of the five are stack permutations.
+
+\solution{Tracing}{15}
+\outputfile{t15}
+70 absorbs the 60 before it (span $1+1$). 75 absorbs \cc{60:1} and \cc{70:2}: span
+$1+1+2=4$. 85 absorbs \cc{75:4} and \cc{80:1}: span 6. The second 85 absorbs the first
+(\cc{<=}): span 7. \emph{Twist:} the stack keeps only 2 pairs at the end although 8 days
+were seen; the absorbed days are represented by the spans.
+
+\solution{Tracing}{16}
+\outputfile{t16}
+The middle is index $\lfloor(n-1)/2\rfloor$: for $n=1..4$ that is $0,0,1,1$. A push at
+the back moves \cc{mid} forward when $n$ becomes odd; a push at the front moves it
+\emph{backward} when $n$ becomes even (from 20 to 10 at $n=6$). Pops do the reverse.
+
+\solution{Tracing}{17}
+\outputfile{t17}
+For $x=4$ the search keeps going left after finding a 4, ending at the \emph{first} 4
+(index 1). For $x=10$ the answer 6 is where 10 would be inserted. For $x=20$ all items are
+smaller and the answer is $n=9$, which is not a valid index: a caller must test
+$\cc{answer}<n$ before reading \cc{a[answer]}. Each search takes at most
+$\lceil\lg(n+1)\rceil=4$ steps.
+
+\solution{Tracing}{18}
+\outputfile{t18}
+Queue after each round: \cc{[4 5 6 1 2]} (3 out), \cc{[1 2 4 5]} (6 out),
+\cc{[5 1 2]} (4 out), \cc{[5 1]} (2 out); in the last round 5 and 1 both go to the back
+and the third person counted is 5 again, so 5 leaves. The winner is 1. Recurrence with $k=3$: $J=0,1,1,0,3,0$ for
+$i=1..6$, so the winner is $J(6)+1=1$. \emph{Twist:} when fewer than $k$ people remain,
+the count wraps around the circle more than once.
+
+\solution{Tracing}{19}
+\outputfile{t19}
+\cc{splice(\&a,2,\&b)} makes 10 the item at index 2. \cc{a.head->next->next} is the node
+10, so \cc{c} goes after it. Splicing at the end must update \cc{a.tail} (the tail
+stays 5 in the middle splices). An invalid position changes nothing, and \cc{d} keeps
+its node until the valid splice at \cc{a.size} appends it and moves the tail.
+
+\solution{Tracing}{20}
+\outputfile{t20}
+\cc{sh} shares its nodes with \cc{orig}: changing \cc{sh.head->item} changes
+\cc{orig}'s first item to 99. \cc{dp} has its own nodes. \emph{Twist:}
+\cc{pushFront(\&sh,0)} changes only \cc{sh.head} and \cc{sh.size}: \cc{orig} does not see
+the new node and still has size 3, although the two lists share their last three nodes.
+
+\solution{Tracing}{21}
+\outputfile{t21}
+\cc{pushBack(1)} writes cell 0. \cc{pushFront(2)}: $f=(0+4)\bmod5=4$. \cc{pushFront(3)}:
+$f=3$. \cc{pushBack(4)} writes cell $(3+3)\bmod5=1$. \cc{popBack} returns cell
+$(3+3)\bmod5=1$, i.e.\ 4; \cc{popFront} returns 3. Then 5 and 6 fill cells 1 and 2 and
+7 goes to cell 3; the deque is full and both further pushes fail ($r=0$). The last line
+shows why the code adds 4: \cc{(0-1)\%5} is $-1$ in C, \cc{(0-1+5)\%5} is 4, and
+\cc{-7/2} is $-3$.
+
+\solution{Tracing}{22}
+\outputfile{t22}
+\cc{add(1,15)} with $n=4$: $1<2$, so the left side (item 10) moves one cell left, to cell
+7, and $j=7$. \cc{add(3,25)} with $n=5$: $3\ge2$, so items 3 and 4 (30, 40) move right.
+\cc{add(0,5)}: nothing moves, $j$ steps back to 6. \cc{add(6,45)} with $n=7$: only the
+last item moves. Total moves 4, against $3+2+6+1=12$ for an array list doing the same
+insertions.
+
+\solution{Tracing}{23}
+\outputfile{t23}
+At $i=2$ the 12 pops both earlier indices. At $i=4$ the 8 pops the 3. At $i=5$ the front
+index 2 has left the window ($2\le5-3$) and is popped from the front; then the new 8 pops
+the old 8 because the test is \cc{<=}, so the deque keeps the \emph{newer} of two equal
+values, which stays in the window longer. The maxima are 12, 12, 12, 8, 8, 8.
+
+\solution{Tracing}{24}
+\outputfile{t24}
+The list is a circle, so moving \cc{last} one step \emph{rotates} the queue: the old front
+1 becomes the rear. Two more steps bring it back. \cc{deq} removes the front 1. After the
+loop empties the queue, \cc{last} is \cc{NULL}. \emph{Twist:} the final failed \cc{deq}
+returns 0 and \cc{x} keeps 4, the last item removed.
+
+\solution{Tracing}{25}
+\outputfile{t25}
+The empty deque's sentinel points to itself; \cc{ldPopBack} fails and leaves $x=-1$.
+After \cc{0 1 2 3}, popping both ends gives 3 and 0. The last item is 2 and the first
+node's \cc{prev} is the sentinel. \emph{Twist:} the copy \cc{e} has its own sentinel,
+but \cc{e.sentinel.next} is \cc{d}'s first node, whose \cc{prev} still points to
+\cc{d}'s sentinel (0). After \cc{ldPushFront(\&d,9)} the copy still thinks its first item
+is 1 and its size is 2 --- it is out of date and, once \cc{d} is freed, dangling. The
+deque \cc{d} is empty again after \cc{ldFree}.

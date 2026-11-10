@@ -1,0 +1,6 @@
+uuuooouo ok
+uouououo ok
+uuuou stuck: top 4, want 1
+uuouuooo ok
+uuuuo stuck: top 3, want 1
+3

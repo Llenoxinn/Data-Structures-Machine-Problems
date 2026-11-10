@@ -1,0 +1,86 @@
+\chapter{Instructions and Marking Scheme}\label{ch:instructions}
+
+This part simulates the departmental written examination. It has three sections, in the
+order in which they are usually set.
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}llp{0.55\linewidth}@{}}\toprule
+Section & Chapter & Content\\\midrule
+A.\ Concepts & \ref{ch:concepts} & short written answers: definitions, complexities, small
+  proofs and hand simulations\\
+B.\ Tracing & \ref{ch:tracing} & read a program and state its exact output; most items
+  hide a twist\\
+C.\ Problem solving & \ref{ch:problems} & write code against a specification, with test
+  cases, permitted operations and a required time complexity\\\bottomrule
+\end{tabular}
+\end{table}
+
+\section{How to use this part}
+\begin{enumerate}[(i)]
+\item \emph{Attempt each item on paper first.} Tracing is a paper skill; reading the
+  answer teaches little.
+\item \emph{Time yourself.} A realistic budget is 2--3 minutes per concept item, 5--8
+  minutes per tracing item and 20--30 minutes per easy-to-medium problem.
+\item \emph{Check against Part~III}, which gives the real program output, the reasoning,
+  and for problems an idea, a complete commented solution, its complexity and the usual
+  mistakes.
+\item \emph{Run the code.} Every program in the book was compiled and run; retyping the
+  solutions is excellent practice, and altering the inputs shows what each line does.
+\end{enumerate}
+
+\section{Conventions used in the problem statements}
+\begin{itemize}
+\item \textbf{Permitted operations.} Each problem lists the operations you may call.
+  Anything else must be written by you, from the representation, if the statement allows
+  it. Calling an operation that is not listed (for instance indexing the array inside a
+  stack when only push and pop are permitted) forfeits the credit even if the output is
+  correct.
+\item \textbf{Starter code and constraints.} The box under the statement is the function
+  (or the few functions) you have to write; the types and helper operations it uses are
+  those of the cited listing. The constraints give the sizes the tests may reach.
+\item \textbf{Required.} The time (and sometimes space) complexity needed for full credit.
+  A slower correct solution earns partial credit.
+\item \textbf{Bonus.} Extra credit for beating the required bound, or for an additional
+  property (in place, single pass, $O(1)$ extra space).
+\item \textbf{Tests.} Sample inputs and expected outputs. They are illustrations, not the
+  full test set: a real judge adds the empty case, the one-element case, duplicates, the
+  maximum size, a full fixed-capacity structure, indices that wrap around, and adversarial
+  orderings.
+\item $n$ is the number of items. Positions are 0-based unless the statement says
+  otherwise.
+\item Unless stated otherwise, you may assume the memory returned by \cc{malloc}/\cc{new}
+  is available, and you must not leak nodes that your code removes.
+\end{itemize}
+
+\section{A sample marking scheme}
+The departmental scheme differs from term to term; the following is a plausible shape,
+useful for self-assessment.
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}lr@{}}\toprule
+Criterion & Share\\\midrule
+Correct on all tests, including edge cases & 50\%\\
+Meets the required complexity & 20\%\\
+Uses only permitted operations (abstraction respected) & 10\%\\
+No memory errors, no leaks; \cc{head}/\cc{tail}/\cc{size}/\cc{front} consistent & 10\%\\
+Readability and comments & 10\%\\
+Bonus for a faster or leaner solution & up to $+20\%$ of the item\\\bottomrule
+\end{tabular}
+\end{table}
+
+\para{Exam technique}
+\begin{enumerate}[(i)]
+\item Write the invariant or the picture before the loop. A node-and-arrow sketch of the
+  three cases (empty, one node, general), or an array with \cc{front} and \cc{size}
+  marked, catches most bugs.
+\item Handle the edge cases explicitly, with their own \cc{if}: empty structure, one
+  element, first, last, not found, duplicates, everything equal, full, wrap-around.
+\item State the complexity in a comment. If you know a faster approach but cannot finish
+  it, submit the correct slower one and say so.
+\item Never call a library routine that does the very thing being asked (e.g.\
+  \cc{std::reverse} in a problem about reversing); do not depend on headers beyond
+  \cc{stdio}/\cc{stdlib}/\cc{iostream} unless the statement permits.
+\item For a stack, queue or deque problem, first ask \emph{which end} each item leaves
+  from. ``The most recent'' means a stack; ``the oldest'' means a queue; ``both'', or
+  ``the oldest and also the most recent'', means a deque.
+\end{enumerate}

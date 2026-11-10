@@ -1,0 +1,171 @@
+% ---------------------------------------------------------------- fonts
+\usepackage{amsmath,amsthm}
+\usepackage{fontspec}
+\setmainfont{texgyrepagella}[Extension=.otf,UprightFont=*-regular,
+  BoldFont=*-bold,ItalicFont=*-italic,BoldItalicFont=*-bolditalic]
+\setmonofont{Inconsolatazi4}[Scale=0.9,Extension=.otf,
+  UprightFont=*-Regular,BoldFont=*-Bold]
+\usepackage{unicode-math}
+\setmathfont{texgyrepagella-math.otf}
+
+% ---------------------------------------------------------------- page
+\usepackage[a4paper,top=2.6cm,bottom=2.8cm,inner=3.0cm,outer=3.0cm,headheight=14pt]{geometry}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{booktabs,array,longtable,tabularx,multirow}
+\usepackage[shortlabels]{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{fancyvrb}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf,margin=1em}
+\usepackage[most]{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc,decorations.pathreplacing,fit,shapes.misc}
+\usepackage[hidelinks,bookmarksnumbered]{hyperref}
+\setlist{itemsep=2pt,topsep=4pt}
+\setlength{\parskip}{3pt plus 1pt}
+\linespread{1.04}
+
+\definecolor{codegray}{gray}{0.40}
+\definecolor{rulegray}{gray}{0.55}
+\definecolor{shade}{gray}{0.88}
+\definecolor{shadedark}{gray}{0.72}
+
+% ---------------------------------------------------------------- headers
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[C]{\small Data Structures \textbar{} 2nd Long Exam Reviewer}
+\fancyfoot[C]{\small Juevesano D. 2026 All rights reserved.}
+\fancyfoot[LE,RO]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancypagestyle{plain}{\fancyhf{}%
+  \fancyhead[C]{\small Data Structures \textbar{} 2nd Long Exam Reviewer}%
+  \fancyfoot[C]{\small Juevesano D. 2026 All rights reserved.}%
+  \fancyfoot[LE,RO]{\small\thepage}%
+  \renewcommand{\headrulewidth}{0.4pt}}
+
+% ---------------------------------------------------------------- titles
+\titleformat{\chapter}[display]
+  {\centering\normalfont}
+  {\large\textsc{\chaptertitlename\ \thechapter}}
+  {10pt}
+  {\LARGE\scshape}
+  [\vspace{6pt}\titlerule]
+\titlespacing*{\chapter}{0pt}{10pt}{28pt}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries\itshape}{\thesubsection}{0.8em}{}
+\titleformat{\part}[display]{\centering\normalfont}{\Large\textsc{\partname\ \thepart}}{14pt}
+  {\Huge\scshape}[\vspace{10pt}\rule{0.3\linewidth}{0.4pt}]
+\renewcommand{\thepart}{\Roman{part}}
+\newcommand{\para}[1]{\par\smallskip\noindent\textbf{\textit{#1.}}\enspace}
+
+% ---------------------------------------------------------------- theorems
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{example}[definition]{Example}
+\theoremstyle{plain}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{corollary}[definition]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[definition]{Remark}
+
+% A note with a bar on the left: \begin{note}{Title} ... \end{note}
+\newtcolorbox{note}[1]{enhanced,breakable,frame hidden,boxrule=0pt,
+  borderline west={1.2pt}{0pt}{black},colback=white,left=8pt,right=0pt,
+  top=1pt,bottom=1pt,before upper={\textsc{#1.}\enspace},fontupper=\small,
+  before skip=8pt,after skip=8pt}
+
+% ---------------------------------------------------------------- code
+\usepackage{listings}
+\lstdefinestyle{book}{
+  language=C,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\bfseries,
+  commentstyle=\color{codegray},
+  stringstyle=\color{black},
+  columns=fullflexible,keepspaces=true,
+  numbers=left,numberstyle=\tiny\color{codegray},numbersep=8pt,
+  frame=tb,framerule=0.4pt,rulecolor=\color{black},
+  xleftmargin=16pt,framexleftmargin=0pt,
+  aboveskip=8pt,belowskip=6pt,
+  breaklines=true,breakatwhitespace=true,
+  showstringspaces=false,tabsize=4,
+  morekeywords={bool,true,false,class,public,private,new,delete,NULL,
+                using,namespace,typedef,struct},
+  upquote=true,
+}
+\lstset{style=book}
+% Boxed starter code in problem statements
+\lstdefinestyle{starter}{style=book,numbers=none,frame=single,
+  xleftmargin=0pt,framexleftmargin=4pt,framexrightmargin=4pt,
+  basicstyle=\ttfamily\footnotesize,aboveskip=6pt,belowskip=4pt}
+\newcommand{\codepath}{../code}
+% \listingfile[options]{path}{caption}: a library or solution file (shown whole)
+\newcommand{\listingfile}[3][]{\lstinputlisting[#1,caption={#3}]{\codepath/#2}}
+% \programfile[options]{path}: a program whose first line (// libs:) is hidden
+\newcommand{\programfile}[2][]{\lstinputlisting[#1,firstline=2]{\codepath/#2}}
+% \outputfile{name}: the real output, out/<name>.txt
+\newcommand{\outputfile}[1]{%
+  \VerbatimInput[frame=single,framesep=6pt,fontsize=\small,rulecolor=\color{rulegray}]{\codepath/out/#1.txt}}
+\renewcommand{\lstlistingname}{Listing}
+\newcommand{\cc}[1]{\texttt{#1}}
+
+% ---------------------------------------------------------------- exam items
+\makeatletter
+\newcommand{\difficulty}[1]{\hfill\textit{\mdseries #1}}
+% \problem{n}{Title}{Easy}
+\newcommand{\problem}[3]{\par\bigskip\needspace{8\baselineskip}%
+  \phantomsection\def\@currentlabel{#1}\label{prob:#1}%
+  \addcontentsline{toc}{subsection}{Problem #1. #2}%
+  \noindent{\large\bfseries Problem #1.}\enspace\textsc{#2}\difficulty{#3}\par
+  \vspace{-4pt}\noindent\rule{\linewidth}{0.4pt}\par\vspace{2pt}}
+% \tracing{n}{Title}
+\newcommand{\tracing}[2]{\par\bigskip\needspace{8\baselineskip}%
+  \phantomsection\def\@currentlabel{#1}\label{trace:#1}%
+  \addcontentsline{toc}{subsection}{Tracing #1. #2}%
+  \noindent{\large\bfseries Tracing #1.}\enspace\textsc{#2}\par
+  \vspace{-4pt}\noindent\rule{\linewidth}{0.4pt}\par\vspace{2pt}}
+% \solution{Problem}{n}
+\newcommand{\solution}[2]{\par\bigskip\needspace{8\baselineskip}%
+  \phantomsection\addcontentsline{toc}{subsection}{Solution to #1 #2}%
+  \noindent{\large\bfseries Solution to #1 #2.}\par
+  \vspace{-4pt}\noindent\rule{\linewidth}{0.4pt}\par\vspace{2pt}}
+\newcommand{\field}[1]{\par\noindent\textsc{#1.}\enspace}
+\newcommand{\permitted}{\field{Permitted operations}}
+\newcommand{\constraints}{\field{Constraints}}
+\newcommand{\required}{\field{Required}}
+\newcommand{\bonus}{\field{Bonus (extra credit)}}
+\newcommand{\idea}{\field{Idea}}
+\newcommand{\complexity}{\field{Complexity}}
+\newcommand{\mistakes}{\field{Common mistakes}}
+\makeatother
+% sample tests: \begin{tests} input & output \\ ... \end{tests}
+\newenvironment{tests}
+  {\par\smallskip\noindent\small
+   \tabularx{\linewidth}{@{}>{\ttfamily\raggedright\arraybackslash}X>{\ttfamily\raggedright\arraybackslash}X@{}}
+   \toprule \normalfont\textsc{Input} & \normalfont\textsc{Expected output}\\ \midrule}
+  {\bottomrule\endtabularx\par\smallskip}
+\usepackage{needspace}
+% concept questions
+\newlist{questions}{enumerate}{1}
+\setlist[questions]{label=\textbf{\arabic*.},ref=\arabic*,leftmargin=*,itemsep=6pt}
+
+% ---------------------------------------------------------------- tikz styles
+\tikzset{
+  cell/.style={draw,minimum width=7mm,minimum height=6.5mm,inner sep=0pt,font=\small},
+  sh/.style={fill=shade},
+  shd/.style={fill=shadedark},
+  nd/.style={draw,minimum width=6mm,minimum height=6mm,inner sep=1pt,font=\small},
+  ptr/.style={-{Stealth[length=2mm]},thin},
+  lbl/.style={font=\ttfamily\scriptsize},
+  idx/.style={font=\tiny,text=codegray},
+}
+% \llnode{name}{at}{item}: a singly linked node drawn as [item|.]
+\newcommand{\llnode}[3]{%
+  \node[nd] (#1) at (#2) {#3};
+  \node[draw,minimum width=3mm,minimum height=6mm,inner sep=0pt,anchor=west] (#1p) at (#1.east) {};}
+
+\setlength{\emergencystretch}{3em}

@@ -1,0 +1,373 @@
+\section{Linked lists}\label{sec:problinked}
+
+\problem{13}{Implementation: eraseItems (DLL)}{Medium}
+\emph{This is one of the implementation problems of the departmental style, reproduced
+with its sample input and output.}
+
+Implement the operation \cc{void eraseItems(list *l, int x)} for a doubly linked list.
+Without calling \cc{search} and \cc{erase}, remove all items in \cc{l} equal to \cc{x}.
+The type \cc{list} (Listing~\ref{lst:dll}) has the fields \cc{head}, \cc{tail},
+\cc{size}; nodes have \cc{item}, \cc{next}, \cc{prev}.
+
+The test program reads $n$, then $n$ items, then $x$. It prints the list before, calls
+your function, prints the list after, then \cc{New size:} and the list from tail to head.
+When the list becomes empty it also prints a check that \cc{head} and \cc{tail} are both
+\cc{NULL}. (The template code around your function is reconstructed from the sample
+output; here the test cases are separated by a line \cc{----}.)
+\begin{lstlisting}[style=starter]
+void eraseItems(list *l, int x);
+\end{lstlisting}
+\permitted Direct access to \cc{head}, \cc{tail}, \cc{size}, \cc{next}, \cc{prev}. Not
+\cc{search}, \cc{erase}, \cc{remove} or any helper that finds or deletes a node for you.
+\required $O(n)$ time in one pass; $O(1)$ extra space; \cc{size}, \cc{head}, \cc{tail}
+and every \cc{prev} link correct afterwards; removed nodes freed.
+\bonus Explain why a solution that restarts from the head after every removal is
+$\Theta(n^2)$ on an input such as \cc{1 1 1 1 1 3 3 3 3 3} with $x=3$, although
+it is fast on \cc{3 3 3 3 3}.
+
+\par\smallskip\noindent\textsc{\small Input} (the test cases one after another)
+\VerbatimInput[fontsize=\footnotesize,frame=single,rulecolor=\color{rulegray}]{\codepath/notes/p13_template.in}
+\noindent\textsc{\small Expected output}
+\VerbatimInput[fontsize=\footnotesize,frame=single,rulecolor=\color{rulegray}]{\codepath/out/p13_template.txt}
+
+\problem{14}{Implementation: appendList (copying a list)}{Medium}
+Implement the function \cc{void appendList(list *l, list m)}. The idea is simply to
+append the items of \cc{m} to \cc{l}, without calling \cc{append}. Take note of the edge
+cases. Make sure that when \cc{m} is destroyed, the items appended to the list pointed to
+by \cc{l} are no longer affected. The type \cc{list} (Listing~\ref{lst:dll}) has the
+fields \cc{head}, \cc{tail}, \cc{size}; nodes have \cc{item}, \cc{next}, \cc{prev}.
+
+The test program reads $n$ and the items of \cc{l}, then $|m|$ and the items of \cc{m};
+it prints \cc{list l:}, \cc{l}, \cc{list m:}, \cc{m}, calls the function, destroys
+\cc{m}, and prints \cc{l}.
+\begin{lstlisting}[style=starter]
+void appendList(list *l, list m);
+\end{lstlisting}
+\permitted Direct access to \cc{head}, \cc{tail}, \cc{size}, \cc{next}, \cc{prev};
+\cc{malloc}. Not \cc{append}.
+\required $O(|m|)$ time; the nodes of \cc{l} must be new nodes, never nodes of \cc{m}.
+\bonus The call \cc{appendList(\&x, x)} (a list appended to itself) must terminate and
+double the list. Say why a loop until \cc{NULL} fails here and a counted loop does not.
+
+\par\smallskip\noindent\textsc{\small Input} (the test cases one after another)
+\VerbatimInput[fontsize=\footnotesize,frame=single,rulecolor=\color{rulegray}]{\codepath/notes/p14_template.in}
+\noindent\textsc{\small Expected output}
+\VerbatimInput[fontsize=\footnotesize,frame=single,rulecolor=\color{rulegray}]{\codepath/out/p14_template.txt}
+
+\problem{15}{Implementation: recursive append with a double pointer}{Medium}
+Assume the singly linked list has no tail pointer. Implement \cc{append(snode **h, int
+x)}, which adds a node with item \cc{x} at the end of the list. Notice the double pointer:
+it lets the function change the real pointer and not a copy. \cc{h} is the address of the
+pointer that heads the list. Implement it recursively. In \cc{main} it is called as
+\cc{append(\&l.head, item)}: since the head must change when the list is empty, what is
+passed is the address of the head and not the head.
+\begin{lstlisting}[style=starter]
+void append(snode **h, int x);   // called as append(&l.head, item)
+\end{lstlisting}
+\permitted \cc{malloc}; the fields \cc{item} and \cc{next}. No loops in \cc{append}, no
+extra helper that returns a new head.
+\required $O(n)$ time, recursive.
+\bonus Implement the same operation with a loop but still with a \cc{snode **} (one
+variable, no special case for the empty list). State the recursion depth and when it is
+dangerous.
+\begin{tests}
+5 / 1 2 3 4 5 & 1 2 3 4 5\\
+1 / 109 & 109\\
+10 / 10 9 8 7 6 5 4 3 2 1 & 10 9 8 7 6 5 4 3 2 1\\
+\end{tests}
+
+\problem{16}{Reverse a singly linked list}{Easy}
+Given an SLL, reverse it in place by changing links: do not allocate nodes and do not
+copy items. Implement the iterative \cc{reverseList}, which must also fix \cc{head} and
+\cc{tail}.
+\begin{lstlisting}[style=starter]
+void reverseList(sll *l);          // iterative; fix head and tail
+snode *reverseRec(snode *h);       // bonus: recursive, returns the new head
+\end{lstlisting}
+\permitted Pointer manipulation of \cc{next}, \cc{head}, \cc{tail}.
+\constraints $0\le|l|\le10^5$.
+\required $O(n)$ time, $O(1)$ extra space (iterative).
+\bonus The recursive version \cc{reverseRec}; explain its stack use.
+\begin{tests}
+{}[1,2,3,4,5] & [5,4,3,2,1]\\
+{}[] & []\\
+{}[7] & [7]\\
+\end{tests}
+
+\problem{17}{Middle node and $k$-th node from the end}{Easy}
+Given an SLL, implement (a)~\cc{middleItem}, which returns the middle item (the second
+middle when $n$ is even; the list is non-empty), and (b)~\cc{kthFromEnd}, which stores
+the $k$-th item from the end in \cc{*out} and returns 1, or returns 0 if $k<1$ or $k>n$.
+Both must work in one pass and without using \cc{size}.
+\begin{lstlisting}[style=starter]
+int middleItem(sll *l);                    // second middle if n is even
+int kthFromEnd(sll *l, int k, int *out);   // k = 1 is the last item
+\end{lstlisting}
+\permitted Pointer traversal only. You may not read \cc{size}, count the nodes first, or
+copy the list into an array.
+\constraints $1\le n\le10^5$.
+\required $O(n)$ time, one traversal, $O(1)$ extra space.
+\bonus Return the \emph{first} middle for even $n$ by a change of one condition, and
+explain the change.
+\begin{tests}
+middle [1,2,3,4] & 3\\
+middle [1,2,3,4,5] & 3\\
+kth [10,20,30,40,50], k=2 & 40\\
+kth [10,20,30,40,50], k=5 / k=6 / k=0 & 10 / fails / fails\\
+\end{tests}
+
+\problem{18}{Splicing singly linked lists}{Medium}
+Splicing moves nodes from one list to another by relinking, without allocating or
+copying.
+(i)~\cc{spliceAfter}: move all nodes of \cc{m} into \cc{l}, immediately after node
+\cc{p} (\cc{p==NULL} means ``at the very front''). Afterwards \cc{m} is empty;
+\cc{head}, \cc{tail} and both sizes must be correct.
+(ii)~\cc{splice}: the same, but the place is an index: \cc{pos} nodes of \cc{l} stay in
+front of the spliced part ($0\le\cc{pos}\le|l|$). Return 0 if \cc{pos} is invalid.
+\begin{lstlisting}[style=starter]
+void spliceAfter(sll *l, snode *p, sll *m);  // p == NULL: at the front
+int splice(sll *l, int pos, sll *m);          // 0 if pos is invalid
+\end{lstlisting}
+\permitted Pointer relinking only. No \cc{malloc}, no \cc{free}, no item copying.
+\required \cc{spliceAfter}: $O(1)$. \cc{splice}: $O(\cc{pos})$ to walk to the anchor,
+then $O(1)$.
+\bonus Show that, given a tail pointer, appending a whole list to another list costs
+$O(1)$ whereas an array list needs $\Theta(|m|)$.
+\begin{tests}
+l=[1,2,5], m=[3,4], splice at pos 2 & l=[1,2,3,4,5] m=[] sizes 5 0\\
+l=[1,2,5], m=[3,4], splice at pos 0 & l=[3,4,1,2,5]\\
+l=[1,2,5], m=[3,4], splice at pos 3 & l=[1,2,5,3,4] (tail is 4)\\
+m empty & l unchanged\\
+\end{tests}
+
+\problem{19}{Merge two sorted doubly linked lists}{Medium}
+Two doubly linked lists \cc{a} and \cc{b} are sorted in non-decreasing order. Implement
+\cc{mergeSorted} so that afterwards \cc{a} holds all the nodes in sorted order and
+\cc{b} is empty. Relink the existing nodes (no allocation, no freeing); on equal items
+the node of \cc{a} goes first; all \cc{prev} links, \cc{head}, \cc{tail} and \cc{size}
+must be correct.
+\begin{lstlisting}[style=starter]
+void mergeSorted(list *a, list *b);
+\end{lstlisting}
+\permitted Pointer manipulation of \cc{next}, \cc{prev}, \cc{head}, \cc{tail}, \cc{size}.
+\required $O(|a|+|b|)$ time, $O(1)$ extra space.
+\bonus Attach the remainder of the non-empty list in $O(1)$ instead of node by node.
+\begin{tests}
+a=[1,4,7], b=[2,4,5,9] & a=[1,2,4,4,5,7,9] size 7; backward: 9 7 5 4 4 2 1; b.size=0\\
+a=[], b=[3] & a=[3]\\
+a=[1], b=[] & a=[1]\\
+\end{tests}
+
+\problem{20}{Palindromic doubly linked list}{Easy}
+Given a doubly linked list, return 1 if its items read the same forwards and backwards,
+else 0. The empty list and a one-element list are palindromes.
+\begin{lstlisting}[style=starter]
+int isPalindrome(list *l);
+\end{lstlisting}
+\permitted Pointer traversal. Not an auxiliary array or stack.
+\constraints $0\le n\le10^5$.
+\required $O(n)$ time, $O(1)$ extra space.
+\bonus Stop after $\lfloor n/2\rfloor$ comparisons.
+\begin{tests}
+{}[1,2,3,2,1] & 1\\
+{}[1,2,3,4] & 0\\
+{}[] & 1\\
+{}[7] & 1\\
+{}[4,5,5,4] & 1\\
+\end{tests}
+
+\problem{21}{Reverse a doubly linked list}{Easy}
+Given a doubly linked list, reverse it in place.
+\begin{lstlisting}[style=starter]
+void reverseDLL(list *l);
+\end{lstlisting}
+\permitted Pointer manipulation only.
+\required $O(n)$ time, $O(1)$ space.
+\bonus Do it by swapping \cc{next} and \cc{prev} in every node, without moving any item.
+\begin{tests}
+{}[1,2,3,4,5] & forward 5 4 3 2 1; backward 1 2 3 4 5\\
+{}[] & []\\
+\end{tests}
+
+\problem{22}{Remove duplicates from a sorted doubly linked list}{Easy}
+Given a doubly linked list sorted in non-decreasing order, remove nodes so that each
+value appears once (keep the first node of each run). Free the removed nodes and keep
+\cc{tail} and \cc{size} correct.
+\begin{lstlisting}[style=starter]
+void removeDuplicates(list *l);
+\end{lstlisting}
+\permitted Pointer manipulation only; no \cc{search} or \cc{erase}.
+\required $O(n)$ time, $O(1)$ space.
+\bonus Remove \emph{all} nodes whose value occurs more than once.
+\begin{tests}
+{}[1,1,2,3,3,3,5] & [1,2,3,5], size 4\\
+{}[2,2,2] & [2]\\
+{}[] & []\\
+\end{tests}
+
+\problem{23}{Insert into a sorted doubly linked list}{Easy}
+Given a doubly linked list sorted in non-decreasing order, insert $x$ so that the list
+stays sorted (after equal items). Handle the empty list, the new minimum and the new
+maximum.
+\begin{lstlisting}[style=starter]
+void insertSorted(list *l, int x);
+\end{lstlisting}
+\permitted Allocation, \cc{next}/\cc{prev}, \cc{head}/\cc{tail}. No call to
+\cc{append} except where it is the correct case.
+\required $O(n)$ time.
+\bonus $O(1)$ when $x$ is not smaller than the tail item.
+\begin{tests}
+{}[2,4,4,8], insert 1 & [1,2,4,4,8]\\
+then insert 5 & [1,2,4,4,5,8]\\
+then insert 9 & [1,2,4,4,5,8,9] (tail 9, size 7)\\
+then insert 4 & [1,2,4,4,4,5,8,9]\\
+{}[], insert 3 & [3]\\
+\end{tests}
+
+\problem{24}{An SLL with a middle pointer}{Medium}
+A singly linked list \cc{mlist} keeps, besides \cc{head}, \cc{tail} and \cc{size}, a
+pointer \cc{mid}. The invariant is
+\begin{gather*}\cc{size}=0\Rightarrow\cc{head}=\cc{mid}=\cc{tail}=\cc{NULL},\\
+\cc{size}>0\Rightarrow\cc{mid}\text{ points to the node at index }
+\lfloor(\cc{size}-1)/2\rfloor\text{ (0-based).}\end{gather*}
+Implement \cc{middle}, \cc{mPushBack}, \cc{mPushFront}, \cc{mPopFront} and \cc{mPopBack}
+so that every operation restores the invariant.
+\begin{lstlisting}[style=starter]
+typedef struct mnode { int item; struct mnode *next; } mnode;
+typedef struct { mnode *head, *mid, *tail; int size; } mlist;
+void minit(mlist *l);
+int middle(mlist *l);                 // O(1)
+void mPushBack(mlist *l, int x);      // O(1)
+int mPopFront(mlist *l, int *x);      // O(1); 0 if empty
+void mPushFront(mlist *l, int x);     // O(1) or O(n), see below
+int mPopBack(mlist *l, int *x);       // O(n)
+\end{lstlisting}
+\permitted Pointer manipulation. A node has only \cc{item} and \cc{next}.
+\required \cc{middle}, \cc{mPushBack}, \cc{mPopFront}: $O(1)$. For \cc{mPushFront} and
+\cc{mPopBack} state the worst case.
+\bonus Explain why a doubly linked list would make all four end operations $O(1)$.
+\begin{tests}
+pushBack 10,20,\dots,70 (sizes 1..7) & mid after each: 10 10 20 20 30 30 40\\
+10,20,30,40; pushFront 5; pushFront 1 & mid 20; then mid 10 (list 1 5 10 20 30 40)\\
+then: popFront; popBack; pushBack 50; popFront & mid 20; 10; 20; 20 (list 10 20 30 50)\\
+\end{tests}
+
+\problem{25}{Rotate a linked list}{Medium}
+Given an SLL and an integer $k\ge0$, rotate the list to the left by $k$ positions:
+$[1,2,3,4,5]$ with $k=2$ becomes $[3,4,5,1,2]$. $k$ may exceed $n$.
+\begin{lstlisting}[style=starter]
+void rotateLeft(sll *l, int k);
+\end{lstlisting}
+\permitted Pointer manipulation; \cc{size} is available.
+\constraints $0\le n\le10^5$, $0\le k\le10^9$.
+\required $O(n)$ time.
+\bonus No node is allocated or freed.
+\begin{tests}
+{}[1,2,3,4,5], k=2 & [3,4,5,1,2]\\
+{}[1,2,3,4,5], k=7 & [3,4,5,1,2]\\
+{}[1,2,3,4,5], k=5 & [1,2,3,4,5]\\
+{}[], k=3 & []\\
+\end{tests}
+
+\problem{26}{Partition a linked list around a value}{Medium}
+Given an SLL and a value $x$, rearrange the nodes so that all nodes with item $<x$
+precede all nodes with item $\ge x$, keeping the original relative order inside each
+group. Relink nodes; do not allocate.
+\begin{lstlisting}[style=starter]
+void partitionList(sll *l, int x);
+\end{lstlisting}
+\permitted Pointer manipulation only.
+\required $O(n)$ time, one pass.
+\bonus $O(1)$ extra space using two dummy nodes.
+\begin{tests}
+{}[1,4,3,2,5,2], x=3 & [1,2,2,4,3,5]\\
+{}[5,6], x=3 & [5,6]\\
+{}[1,2], x=3 & [1,2]\\
+{}[], x=3 & []\\
+\end{tests}
+
+\problem{27}{Remove the $n$-th node from the end}{Medium}
+Given an SLL, remove the $n$-th node from the end ($n=1$ is the last node) in one pass.
+Return 1, or 0 if $n<1$ or $n>|l|$. Keep \cc{head}, \cc{tail} and \cc{size} correct and
+free the node.
+\begin{lstlisting}[style=starter]
+int removeNthFromEnd(sll *l, int n);   // n = 1 is the last node
+\end{lstlisting}
+\permitted Pointer manipulation; do not use \cc{size} to compute the position.
+\required $O(|l|)$ time, one pass.
+\bonus Handle the removal of the head with a dummy node and no special case.
+\begin{tests}
+{}[1,2,3,4,5], n=2 & [1,2,3,5]\\
+{}[1,2,3,5], n=4 & [2,3,5] (size 3)\\
+{}[2,3,5], n=1 & [2,3] (tail 3)\\
+{}[2,3], n=3 & fails (0), list unchanged\\
+{}[7], n=1 & [] (head, tail NULL, size 0)\\
+\end{tests}
+
+\problem{28}{Swap nodes in pairs}{Medium}
+Given an SLL, swap every two adjacent nodes: $[1,2,3,4]\to[2,1,4,3]$. A final unpaired
+node stays where it is. Swap nodes, not items.
+\begin{lstlisting}[style=starter]
+void swapPairs(sll *l);
+\end{lstlisting}
+\permitted Pointer manipulation only.
+\required $O(n)$ time, $O(1)$ space.
+\bonus The same with recursion; also keep \cc{tail} correct.
+\begin{tests}
+{}[1,2,3,4] & [2,1,4,3]\\
+{}[1,2,3,4,5] & [2,1,4,3,5] (tail 5)\\
+{}[1] & [1]\\
+\end{tests}
+
+\problem{29}{Cycle detection}{Medium}
+Given the head of a singly linked list whose last node may point back to an earlier node,
+return 1 if the list contains a cycle and 0 otherwise. The list is not modified.
+\begin{lstlisting}[style=starter]
+int hasCycle(snode *head);        // 1 if the list has a cycle
+snode *cycleStart(snode *head);   // bonus: first node of the cycle, or NULL
+\end{lstlisting}
+\permitted Pointer traversal. No visited-marker field, no auxiliary array or table.
+\constraints $0\le n\le10^5$.
+\required $O(n)$ time and $O(1)$ extra space.
+\bonus Return the first node of the cycle (or \cc{NULL}), in $O(n)$ time and $O(1)$
+space.
+\begin{tests}
+{}[1,2,3,4,5], last node points to the 3rd node & 1 (cycle starts at item 3)\\
+{}[1,2,3,4,5], last node points to the head & 1 (starts at item 1)\\
+{}[1,2,3,4,5], no link back & 0\\
+{[] (head is NULL)} & 0\\
+\end{tests}
+
+\problem{30}{Group odd and even positions}{Medium}
+Given an SLL, group all nodes at odd positions (1st, 3rd, \dots) first, followed by all
+nodes at even positions, each group keeping its order: $[1,2,3,4,5]\to[1,3,5,2,4]$. The
+positions are meant, not the values.
+\begin{lstlisting}[style=starter]
+void oddEvenList(sll *l);
+\end{lstlisting}
+\permitted Pointer manipulation only.
+\required $O(n)$ time, $O(1)$ extra space.
+\bonus Keep \cc{tail} correct.
+\begin{tests}
+{}[1,2,3,4,5] & [1,3,5,2,4] (tail 4)\\
+{}[1,2,3,4] & [1,3,2,4]\\
+{}[1,2] & [1,2]\\
+\end{tests}
+
+\problem{31}{Add two numbers stored in linked lists}{Medium}
+Two non-negative integers are stored one digit per node, least significant digit first:
+342 is $2\to4\to3$. Given the lists \cc{a} and \cc{b}, build in \cc{out} the list of their
+sum, in the same form. The lists may have different lengths and there may be a final
+carry.
+\begin{lstlisting}[style=starter]
+void addNumbers(sll *a, sll *b, sll *out);
+\end{lstlisting}
+\permitted \cc{sinit} and \cc{pushBack} on the result. No conversion to a machine
+integer (the numbers may have hundreds of digits).
+\required $O(\max(|a|,|b|))$ time.
+\bonus The case in which the digits are stored most significant first.
+\begin{tests}
+{}[2,4,3] + [5,6,4] & [7,0,8]\\
+{}[9,9] + [1] & [0,0,1]\\
+{}[0] + [0] & [0]\\
+\end{tests}

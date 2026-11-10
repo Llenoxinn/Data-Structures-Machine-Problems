@@ -1,0 +1,254 @@
+\chapter{Deques}\label{ch:deques}
+
+\section{The Deque ADT}
+
+\begin{definition}[Deque]
+A \emph{deque} (double-ended queue, pronounced ``deck'') is a sequence in which
+insertions and deletions may take place at both ends. Its operations are
+\cc{push\_front(x)}, \cc{push\_back(x)}, \cc{pop\_front()}, \cc{pop\_back()},
+\cc{front()}, \cc{back()}, \cc{empty()} and \cc{size()}.
+\end{definition}
+
+A deque generalises both earlier structures. Using only \cc{push\_back} and
+\cc{pop\_back} it is a stack; using only \cc{push\_back} and \cc{pop\_front} it is a
+queue. Two restricted forms appear in textbooks: an \emph{input-restricted} deque
+(insertion at one end only, deletion at both) and an \emph{output-restricted} deque
+(insertion at both ends, deletion at one only).
+
+\begin{example}
+Starting from an empty deque, the operations \cc{push\_back(1)}, \cc{push\_front(2)},
+\cc{push\_back(3)}, \cc{push\_front(4)} produce \cc{4 2 1 3}. Then \cc{pop\_back()}
+returns 3 and \cc{pop\_front()} returns 4, leaving \cc{2 1}.
+\end{example}
+
+\section{The circular-array deque}
+
+The circular buffer of Chapter~\ref{ch:queues} already supports \cc{push\_back} and
+\cc{pop\_front} in $\Theta(1)$. The other two operations are the mirror images:
+\begin{itemize}
+\item \cc{push\_front(x)}: step \cc{front} \emph{back} by one cell, wrapping from 0 to
+  \cc{CAP-1}, then write \cc{x} there and increase \cc{size};
+\item \cc{pop\_back()}: the last item is at \cc{(front+size-1)\%CAP}; read it and
+  decrease \cc{size} (\cc{front} does not change).
+\end{itemize}
+
+\listingfile[label=lst:deque]{lib/deque.h}{The circular-array deque used in Parts II and
+III (file \cc{deque.h}).}
+
+\begin{note}{The modulo trap}
+In C and C++ the result of \cc{\%} has the sign of the left operand, because integer
+division truncates toward zero: \cc{-7 / 2 == -3} and \cc{-1 \% 5 == -1}, not $4$.
+Hence \cc{front = (front - 1) \% CAP} sets \cc{front} to $-1$ when \cc{front} was $0$,
+and the next write lands outside the array. Always add \cc{CAP} first:
+\cc{(front - 1 + CAP) \% CAP}, or equivalently \cc{(front + CAP - 1) \% CAP}. With a fixed
+capacity 5 the same step is often written \cc{(front + 4) \% 5}
+(Tracing~\ref{trace:21}). In Python, \cc{-1 \% 5} is $4$; do not carry that habit
+into C.
+\end{note}
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}[x=7.5mm]
+\foreach \v/\s [count=\i from 0] in {6/sh,{}/,{}/,{}/,{}/,{}/} \node[cell,\s] (a\i) at (\i,0) {\v};
+\foreach \i in {0,...,5} \node[idx,above=0pt of a\i] {\i};
+\draw[ptr] (0,-0.9) node[below,lbl]{front=0} -- (a0.south);
+\node[left,font=\scriptsize] at (-0.6,0) {\texttt{[6]}};
+\foreach \v/\s [count=\i from 0] in {6/sh,{}/,{}/,{}/,{}/,8/shd} \node[cell,\s] (b\i) at (\i+9,0) {\v};
+\foreach \i in {0,...,5} \node[idx,above=0pt of b\i] {\i};
+\draw[ptr] (14,-0.9) node[below,lbl]{front=(0-1+6)\%6=5} -- (b5.south);
+\node[above,font=\scriptsize] at (11.5,0.6) {after \texttt{push\_front(8)}: \texttt{[8 6]}};
+\end{tikzpicture}
+\caption{\cc{push\_front} on a circular deque of capacity 6 whose front is cell 0: the
+new front is the \emph{last} cell.}
+\end{figure}
+
+\section{The ArrayDeque: positional access in a circular array}
+
+The course notes (after Morin's \emph{ArrayDeque}) go one step further and support the
+whole List interface --- \cc{get(i)}, \cc{set(i,x)}, \cc{add(i,x)}, \cc{remove(i)} --- in
+a circular array with fields \cc{j} (the index of item 0) and \cc{n} (the size). Item $i$
+lives at \cc{a[(j+i)\%CAP]}.
+
+\para{Shift the shorter side} To insert at position $i$, an array list moves the $n-i$
+items to the right of $i$. In a circular array there is a second option: move the $i$
+items to the \emph{left} of $i$ one cell to the left, after stepping \cc{j} back by one.
+The ArrayDeque chooses the side with fewer items: the left side if $i<n/2$, otherwise the
+right side. Removal is symmetric.
+
+\listingfile[label=lst:arraydeque]{sol/p56.c}{ArrayDeque with positional insertion and
+removal (Problem~\ref{prob:56}, Tracing~\ref{trace:22}).}
+
+\begin{theorem}[Cost of ArrayDeque]
+\cc{get} and \cc{set} cost $\Theta(1)$. \cc{add(i,x)} and \cc{remove(i)} move at most
+$\min(i,\,n-i)$ items and cost $O(1+\min(i,n-i))$. In particular all four operations at
+either end ($i=0$ or $i=n$, resp.\ $i=n-1$) are $\Theta(1)$, and the worst case, in the
+middle, is about $n/2$ moves --- half that of an array list.
+\end{theorem}
+\begin{proof}
+If $i<n/2$ the code moves the $i$ items before position $i$; otherwise $i\ge n/2$ and it
+moves the $n-i$ items from position $i$ onward. In both cases the number moved is
+$\min(i,n-i)$ up to one, and each move is one assignment.
+\end{proof}
+
+\section{The linked deque}
+
+A singly linked list cannot be a deque with all operations in $\Theta(1)$: \cc{pop\_back}
+needs the predecessor of the tail. A doubly linked list can. With a \emph{sentinel}
+(Section~\ref{sec:sentinel}) closed into a circle --- \cc{sentinel.next} is the first
+item, \cc{sentinel.prev} the last, and both point to the sentinel itself when the deque
+is empty --- every insertion is ``link a node between two neighbours'' and every removal
+is ``unlink a node from its two neighbours''. No pointer is ever \cc{NULL}, so the four
+operations have no special cases at all.
+
+\listingfile[label=lst:linkeddeque]{sol/p51.c}{A linked deque with an embedded sentinel
+(Problem~\ref{prob:51}, Tracing~\ref{trace:25}).}
+
+\begin{note}{Never copy a struct that contains its own sentinel}
+Here the sentinel is a member of the \cc{linkedDeque} struct, and the first and last
+nodes point at its address. A copy \cc{linkedDeque e = d;} (or passing the struct by
+value) creates a second sentinel at a different address whose \cc{next} and \cc{prev}
+still lead into \cc{d}'s nodes, while those nodes still point back to \cc{d}'s sentinel.
+Walking \cc{e} from its sentinel never returns to it. Always pass \cc{linkedDeque *}.
+(A sentinel allocated with \cc{malloc}, as in Listing~\ref{lst:dllist}, avoids this
+particular trap but still shares the nodes.)
+\end{note}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}lccc@{}}\toprule
+ & circular array & ArrayDeque & doubly linked + sentinel\\\midrule
+push/pop at either end & $\Theta(1)$ & $\Theta(1)$ & $\Theta(1)$\\
+\cc{get(i)}, \cc{set(i,x)} & $\Theta(1)$ & $\Theta(1)$ & $\Theta(\min(i,n-i))$\\
+\cc{add(i,x)}, \cc{remove(i)} & --- & $\Theta(1+\min(i,n-i))$ & $\Theta(\min(i,n-i))$ + $\Theta(1)$ link\\
+memory per item & one cell & one cell & item + two pointers\\\bottomrule
+\end{tabular}
+\caption{Deque implementations. A doubly linked list walks from the nearer end to reach
+position $i$.}
+\end{table}
+
+\section{The monotonic deque}\label{sec:monodeque}
+
+\para{Problem} Given an array of $n$ values and a window size $k$, report the maximum of
+every window \cc{a[i-k+1..i]}. Recomputing each maximum costs $\Theta(nk)$. A queue of
+the window is not enough: when the maximum leaves the window, the next maximum is unknown.
+
+\para{Idea} Keep a deque of \emph{indices} of the current window whose values
+\emph{decrease} from front to back. When \cc{a[i]} arrives:
+\begin{enumerate}
+\item if the front index has slid out of the window ($\le i-k$), pop it from the
+  \emph{front};
+\item pop from the \emph{back} every index $j$ with $\cc{a[j]}\le\cc{a[i]}$: such $j$
+  is older \emph{and} not larger than $i$, so it can never again be the maximum of a
+  window that contains $i$;
+\item push $i$ at the back; the front is now the index of the maximum of the window.
+\end{enumerate}
+The back behaves like the monotonic stack of Section~\ref{sec:monostack}, the front like
+the queue of a sliding window. A deque is exactly the structure that does both.
+
+\listingfile[label=lst:slidingmax]{sol/p53.c}{Sliding window maximum
+(Problem~\ref{prob:53}, Tracing~\ref{trace:23}).}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}ccllc@{}}\toprule
+$i$ & \cc{a[i]} & popped & deque after (indices: values) & output\\\midrule
+0 & 1 & --- & 0:1 & \\
+1 & 3 & back 0 & 1:3 & \\
+2 & $-1$ & --- & 1:3\; 2:$-1$ & 3\\
+3 & $-3$ & --- & 1:3\; 2:$-1$\; 3:$-3$ & 3\\
+4 & 5 & front 1; back 3, 2 & 4:5 & 5\\
+5 & 3 & --- & 4:5\; 5:3 & 5\\
+6 & 6 & back 5, 4 & 6:6 & 6\\
+7 & 7 & back 6 & 7:7 & 7\\\bottomrule
+\end{tabular}
+\caption{Sliding window maximum on $[1,3,-1,-3,5,3,6,7]$ with $k=3$.}
+\end{table}
+
+\begin{theorem}[Sliding window maximum]
+The algorithm is correct and runs in $\Theta(n)$ time and $O(k)$ extra space.
+\end{theorem}
+\begin{proof}
+\emph{Invariant}: after round $i$ the deque contains, in increasing order of index,
+exactly those indices $j$ of the window $[i-k+1,i]$ for which \cc{a[j]} is
+\emph{greater} than every later value of the window; their values therefore decrease
+from front to back, and the front holds the window maximum (the maximum is greater than
+every later value, ties going to the latest). Step~1 removes the only index that can have
+left the window, because the window advances by one. Step~2 removes exactly the indices
+whose value is $\le\cc{a[i]}$, which are the ones no longer greater than every later
+value. Step~3 adds $i$, trivially greater than every later value.
+\emph{Cost}: each index is pushed once and popped at most once (from one end or the
+other), so the loops of all rounds together do at most $2n$ deque operations. The deque
+never holds more than $k$ indices.
+\end{proof}
+
+\para{Variants}
+\begin{itemize}
+\item \emph{Window minimum}: reverse the comparison; values increase from front to back.
+\item \emph{Variable window} (two pointers): the window \cc{a[left..right]} grows at the
+  right and shrinks at the left. Keeping one decreasing deque (maximum) and one
+  increasing deque (minimum) answers ``longest subarray with $\max-\min\le
+  \mathit{limit}$'' in $\Theta(n)$ (Problem~\ref{prob:54}).
+\item \emph{Dynamic programming over a window}: when
+  $\mathit{best}[i]=a[i]+\max(\mathit{best}[i-k..i-1])$, the deque keeps the indices of
+  the last $k$ values of $\mathit{best}$, and the whole table costs $\Theta(n)$ instead
+  of $\Theta(nk)$ (Jump Game VI, Problem~\ref{prob:57}).
+\end{itemize}
+
+\section{Further applications}
+
+\para{Palindromes} Push the characters into a deque; while at least two are left, pop one
+from each end and compare (Problem~\ref{prob:52}). The deque makes the ``two
+pointers from both ends'' pattern explicit.
+
+\para{Two deques back to back} A sequence split into a left half and a right half, each
+in its own deque, allows $\Theta(1)$ access to the \emph{middle} as well as to the ends:
+the middle is the back of the left deque or the front of the right one. After every
+operation one item at most has to cross the boundary to restore the balance
+$|\mathit{right}|-|\mathit{left}|\in\{0,1\}$ (front-middle-back queue,
+Problem~\ref{prob:55}). The same trick with a single middle pointer on a linked list is
+Problem~\ref{prob:24}.
+
+\para{Undo with a limit} An editor that keeps only the last $100$ actions pushes new
+actions at the back, undoes from the back (a stack), and discards the oldest action from
+the \emph{front} when the limit is exceeded. Neither a stack nor a queue suffices; a
+deque does.
+
+\section{The standard library}\label{sec:stl}
+
+In C++ the containers below implement the ADTs of this volume. Examinations that permit
+the STL accept them; examinations that ask you to \emph{implement} an ADT do not.
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}lp{0.42\linewidth}p{0.31\linewidth}@{}}\toprule
+Container & Main operations (all $\Theta(1)$ unless noted) & Notes\\\midrule
+\cc{vector<int>} & \cc{push\_back}, \cc{pop\_back}, \cc{back}, \cc{[i]}, \cc{size};
+  \cc{insert}/\cc{erase} at an iterator $\Theta(n)$ & amortised push; growth invalidates
+  iterators\\
+\cc{list<int>} & \cc{push\_front/back}, \cc{pop\_front/back}, \cc{front}, \cc{back},
+  \cc{insert}/\cc{erase} at an iterator, \cc{splice} & doubly linked with sentinel; no
+  \cc{[i]}\\
+\cc{forward\_list<int>} & \cc{push\_front}, \cc{pop\_front}, \cc{insert\_after},
+  \cc{erase\_after} & singly linked; no \cc{size()}\\
+\cc{deque<int>} & \cc{push\_front/back}, \cc{pop\_front/back}, \cc{front}, \cc{back},
+  \cc{[i]}; middle \cc{insert} $\Theta(n)$ & blocks of arrays\\
+\cc{stack<int>} & \cc{push}, \cc{pop}, \cc{top}, \cc{empty}, \cc{size} & adapter over
+  \cc{deque}\\
+\cc{queue<int>} & \cc{push}, \cc{pop}, \cc{front}, \cc{back}, \cc{empty}, \cc{size} &
+  adapter over \cc{deque}\\\bottomrule
+\end{tabular}
+\caption{STL containers.\label{tab:stl} In all of them \cc{pop}, \cc{pop\_front} and \cc{pop\_back}
+return \cc{void}: read \cc{top()}/\cc{front()}/\cc{back()} first, and never call them on
+an empty container (undefined behaviour, not an error code).}
+\end{table}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}p{0.42\linewidth}p{0.51\linewidth}@{}}\toprule
+If the problem says \dots & think of \dots\\\midrule
+both ends, front and back & a deque\\
+maximum / minimum of every window & monotonic deque of indices (\ref{prob:53})\\
+longest / shortest window with a max--min condition & two monotonic deques + two
+pointers (\ref{prob:54})\\
+$\mathit{best}[i]$ from the best of the last $k$ & DP + monotonic deque (\ref{prob:57})\\
+compare from both ends & pop front and back (\ref{prob:52})\\
+operations in the middle & two balanced deques (\ref{prob:55})\\
+design a circular deque & the modulo trap (\ref{prob:50})\\\bottomrule
+\end{tabular}
+\caption{Recognising a deque problem.}
+\end{table}

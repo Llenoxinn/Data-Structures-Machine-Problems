@@ -1,0 +1,82 @@
+\begin{titlepage}
+\centering
+\vspace*{3cm}
+{\large\textsc{University of the Philippines Cebu}\par}
+\vspace{4pt}
+{\textsc{Data Structures}\par}
+\vspace{2cm}
+\rule{0.65\linewidth}{0.4pt}\par\vspace{18pt}
+{\Huge\textsc{Second Long Examination}\par}
+\vspace{14pt}
+{\Large Lecture Notes, Practice Examination\\ and Worked Solutions\par}
+\vspace{18pt}
+\rule{0.65\linewidth}{0.4pt}\par
+\vspace{2cm}
+{\large\itshape Array Lists and Vectors \,--\, Singly and Doubly Linked Lists\\[2pt]
+Stacks \,--\, Queues \,--\, Deques\par}
+\vspace{2cm}
+{Compiled from the course lecture notes, slides and sample programs\\
+of the Second Long Examination coverage\par}
+\vspace{2cm}
+{\large D. Juevesano\par}
+\vspace{6pt}
+{November 2026\par}
+\vfill
+{\small Every program in this volume was compiled and executed;\\
+every printed output is the output of the program shown.\par}
+\end{titlepage}
+
+\chapter*{Preface}
+\addcontentsline{toc}{chapter}{Preface}
+
+This volume prepares the reader for the Second Long Examination of the course on data
+structures. The coverage of the examination is: \emph{lists} (the array list, the
+growable array or vector, the singly linked list and the doubly linked list),
+\emph{stacks}, \emph{queues} and \emph{deques}. Trees are not part of it. The volume
+has three parts.
+
+\textbf{Part I} is a set of consolidated lecture notes. It merges the lecture handouts on
+abstract data types, array-based lists and linked lists, the slide deck on the List ADT,
+the sample program \cc{arraylist.c} and the linked-list reviewer into one continuous
+exposition with definitions, theorems and proofs. Chapters~\ref{ch:stacks},
+\ref{ch:queues} and~\ref{ch:deques} treat stacks, queues and deques in full: their
+array and linked implementations, the classical applications, and the two techniques
+behind most examination problems on them, the \emph{monotonic stack} and the
+\emph{monotonic deque}.
+
+\textbf{Part II} is a practice examination written in the manner of the departmental
+examination: short conceptual questions, \emph{tracing problems} that carry a twist, and
+\emph{problem-solving} items in the style of an online judge (LeetCode, HackerRank),
+each with starter code, test cases, the permitted operations, a required time complexity
+and, where it applies, a bonus for a faster solution. \textbf{Part III} contains complete
+solutions with explanations, diagrams and the usual mistakes.
+
+\para{The rule of abstraction} Every problem states the \emph{permitted operations}. A
+solution that reaches into the representation of an ADT --- for instance, indexing the
+array inside a stack when only push and pop are permitted --- forfeits the point of the
+exercise and, in an examination, usually the credit. Where a problem asks for a new
+operation, the solution implements it \emph{on top of} the given interface or, when the
+problem says so, directly on the representation (for example, relinking nodes).
+
+\para{Verification} Every listing in this book is included from a source file that was
+compiled with \cc{gcc}/\cc{g++} (with all warnings enabled) and run. The outputs printed
+in the tracing problems and in Part~III are the real outputs of these programs. Every
+solution of Part~III was additionally run against its sample tests and, wherever a simple
+reference implementation exists, against that reference on thousands of random inputs;
+for the linked structures the tests also count the heap blocks, so that a leaked or
+doubly freed node is detected. The two departmental implementation problems
+(\emph{eraseItems} and \emph{appendList}) reproduce their sample outputs character for
+character.
+
+\para{Conventions} Positions in the lecture-slide array list are 0-based; the sample
+program \cc{arraylist.c} uses \emph{1-based} positions in \cc{itemAt} and \cc{setItem}.
+Always read the problem statement for the convention in force. Throughout, $n$ denotes
+the number of items. The code is plain C (and a little C++): no global variables, no
+\cc{static} and no \cc{const}, as in the course.
+
+\para{Sources} The chapter structure follows P.~Morin, \emph{Open Data Structures}
+(ArrayStack, ArrayQueue, ArrayDeque, SLList, DLList), which the handouts adapt;
+the problem bank is adapted from LeetCode and from the classical exercises of the cited
+textbooks. All errors in this volume are the compiler's, or mine.
+
+\tableofcontents

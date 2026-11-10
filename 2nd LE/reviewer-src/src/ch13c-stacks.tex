@@ -1,0 +1,114 @@
+\section{Stacks}
+
+\solution{Problem}{32}
+The solution is Listing~\ref{lst:balanced} of Chapter~\ref{ch:stacks}.
+\idea Push openers; a closer must match the most recent unmatched opener, which is the
+top. Fail on a mismatch, on a closer with an empty stack, or on openers left at the end.
+\complexity $\Theta(n)$ time, $O(n)$ stack.
+\mistakes Returning 1 at the end without checking that the stack is empty (\cc{"(("});
+popping without checking the return value, so that \cc{"))"} compares against a stale
+variable; using counters, which accept \cc{"([)]"}.
+
+\solution{Problem}{33}
+The solution is Listing~\ref{lst:postfix} of Chapter~\ref{ch:stacks}; the table there
+traces \cc{2*(3+4)-5}.
+\idea Shunting-yard for the conversion; one operand stack for the evaluation, where the
+\emph{first} pop is the right operand.
+\complexity Both $\Theta(n)$: every token is pushed and popped at most once.
+\mistakes Popping operators of equal precedence too late (\cc{>} instead of \cc{>=}: then
+\cc{8-3-2} evaluates to 7); forgetting to discard the \cc{(}; swapping the operands of
+\cc{-} and \cc{/} (Tracing~\ref{trace:13}). For the bonus: \cc{\^} has the highest
+precedence and is right-associative, so an incoming \cc{\^} pops only operators of
+\emph{strictly} higher precedence.
+
+\solution{Problem}{34}
+\idea Keep a second stack \cc{mins} in step with \cc{all}: its top is always the minimum
+of the whole stack. Each push pushes $\min(x,\text{top of mins})$; each pop pops both.
+\listingfile{sol/p34.c}{A min stack.}
+\complexity Every operation $\Theta(1)$; $2n$ cells. In the bonus version \cc{mins} is
+pushed only when $x\le$ its top and popped only when the popped item equals its top; the
+test must be $\le$ so that a repeated minimum (pushes 3, 3, pop) is still on \cc{mins}
+after one of its copies leaves.
+\mistakes A single variable for the minimum (it cannot be restored after a pop); popping
+\cc{all} without popping \cc{mins}.
+
+\solution{Problem}{35}
+The solution is Listing~\ref{lst:nextgreater} of Chapter~\ref{ch:stacks}, with
+Theorem~\ref{thm:monostack} for the running time.
+\idea The stack holds the indices still waiting for a greater value; \cc{a[i]} answers
+all smaller waiting values, which are on top.
+\complexity $\Theta(n)$: every index is pushed and popped at most once. Circular bonus:
+run the loop for $i=0..2n-1$ on \cc{a[i \% n]} and push only in the first round.
+\mistakes Storing values instead of indices (then the answer cannot be written to the
+right cell); using \cc{<=}, which treats an equal value as greater (\cc{[1,1]} would give
+\cc{[1,-1]}).
+
+\solution{Problem}{36}
+\idea The same monotonic stack: the waiting days, with non-increasing temperatures.
+When day $i$ is strictly warmer than the day $j$ on top, day $j$ waited $i-j$ days.
+\listingfile{sol/p36.c}{Daily temperatures.}
+\complexity $\Theta(n)$ time.
+\mistakes Using \cc{<=} (equal temperatures are not warmer); forgetting to write 0 for the
+days left on the stack (here written explicitly, since \cc{wait} is not initialised).
+
+\solution{Problem}{37}
+\idea The online ``previous greater'' problem. Keep pairs (price, span) on two stacks in
+step, prices strictly decreasing from bottom to top. A new price absorbs every pair with a
+price $\le$ it, together with the days that pair already covered.
+\listingfile{sol/p37.c}{Online stock span.}
+\complexity $\Theta(1)$ amortised per call: every pair is pushed once and popped at most
+once (Tracing~\ref{trace:15}).
+\mistakes Storing every price and scanning backwards ($\Theta(n)$ per call, $\Theta(n^2)$
+in total for decreasing prices); using \cc{<} (an equal price must be absorbed).
+
+\solution{Problem}{38}
+\idea The stack holds the survivors so far, left to right. Only a left-mover arriving at a
+right-mover on top can collide; it destroys smaller right-movers one after another, dies
+with an equal one, or dies against a larger one. Left-movers with nothing to their left
+that moves right survive. At the end the stack, read from bottom to top, is the answer;
+popping it fills \cc{out} from the right.
+\listingfile{sol/p38.c}{Asteroid collision.}
+\complexity $\Theta(n)$: each asteroid is pushed and popped at most once.
+\mistakes Letting a right-mover collide with a left-mover on top (\cc{[-2,-1,1,2]}: they
+move apart); stopping after one collision; returning the survivors in reverse order.
+
+\solution{Problem}{39}
+\idea At each \cc{[} remember, on two stacks, the repeat count and the position in
+\cc{out} where the bracketed part starts. Characters are written straight to \cc{out}. At
+\cc{]} the part \cc{out[start..len-1]} is already there once; append it $k-1$ more times.
+Nested brackets work because the inner part is expanded before the outer \cc{]} copies it.
+\listingfile{sol/p39.c}{Decode string.}
+\complexity Linear in the length of the output (every output character is written once).
+\mistakes Reading only one digit of the count (\cc{10[a]}); not resetting the count after
+\cc{[}; copying the part $k$ times instead of $k-1$.
+
+\solution{Problem}{40}
+\idea The stack holds the letters that survived so far. A letter equal to the top cancels
+with it; otherwise it is pushed. Cancellations can cascade (\cc{abba}) because after a pop
+the new top is the next older survivor.
+\listingfile{sol/p40.c}{Removing adjacent duplicates.}
+\complexity $\Theta(n)$.
+\mistakes Removing only one pass of pairs (\cc{abbaca} becomes \cc{aaca}, not \cc{ca});
+copying the stack to \cc{out} in reverse order.
+
+\solution{Problem}{41}
+\idea Insertion sort between two stacks. Pop $x$ from \cc{s}; move back to \cc{s} every
+item of \cc{r} larger than $x$; push $x$ on \cc{r}. Then \cc{r} is sorted with the
+largest on top; pouring it into \cc{s} puts the smallest on top.
+\listingfile{sol/p41.c}{Sorting a stack with one extra stack.}
+\complexity $\Theta(n^2)$ in the worst case (each item may be moved back and forth $O(n)$
+times), $\Theta(n)$ if \cc{s} is already ordered suitably.
+\mistakes Comparing with \cc{>=}, which still sorts but moves equal items needlessly;
+forgetting the final pour, which leaves the largest item on top.
+
+\solution{Problem}{42}
+\idea Simulate: push the items of \cc{pushed} in order, and after each push pop as long as
+the top is the next wanted item. The sequence is valid iff every item was popped. Bonus:
+an item must be pushed before it is popped, and once the top is the wanted item, popping
+now is never worse than pushing more (which would only bury it), so the greedy rule
+never misses a solution (Section~\ref{sec:stackperm}).
+\listingfile{sol/p42.c}{Validate stack sequences.}
+\complexity $\Theta(n)$: $n$ pushes and at most $n$ pops.
+\mistakes Popping only once after each push (\cc{4 5 3 2 1} needs several pops at the
+end); reading \cc{popped[j]} with $j=n$ (guarded here by the empty stack after the last
+pop).

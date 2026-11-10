@@ -1,0 +1,6 @@
+5 7
+size=2 head=5 tail=7
+7 5
+size=2
+size=1 head=5 tail=5 prev=1
+size=0 headIsNULL=1 tailIsNULL=1

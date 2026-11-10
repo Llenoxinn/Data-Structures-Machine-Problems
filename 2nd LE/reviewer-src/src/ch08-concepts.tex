@@ -1,0 +1,138 @@
+\chapter{Section A: Concept Questions}\label{ch:concepts}
+
+Answer briefly. Where a proof or a trace is requested, show it. Model answers are in
+Chapter~\ref{ch:solconcepts}; the numbers agree.
+
+\section*{Foundations and array lists}
+\begin{questions}
+\item\label{q:adt} Define \emph{abstract data type}. State the difference between an ADT and a data
+  structure, and name the three ADTs of this coverage that are specialisations or
+  relatives of the List.
+\item Prove or disprove: (a) $23=O(\log n)$; (b) $5\log n=O(1)$; (c) $5n-7=O(n)$. Give
+  constants $c,n_0$ where the claim is true.
+\item State the tightest running time, in $\Theta$-notation, of each operation.
+  (a)~\cc{push\_back} on an array list that is not full; (b)~insert at the front of an
+  array list; (c)~\cc{push\_front} on an SLL; (d)~\cc{pop\_back} on an SLL with head and
+  tail pointers; (e)~\cc{pop\_back} on a DLL with head and tail; (f)~worst-case
+  \cc{get(i)} on a DLL; (g)~searching an unsorted list; (h)~\cc{push\_front} on a
+  circular-array deque that is not full.
+\item A function \cc{void f(list l)} receives an array-list struct (with an array inside
+  it) by value and sets \cc{l.items[0]=100}. Does the caller see the change? What if
+  \cc{l} is a struct with a \cc{head} pointer to nodes, and the function sets
+  \cc{l.head->item=100}? What if the parameter is a raw array \cc{int a[]}? Explain each
+  answer.
+\item After \cc{erase(pos)} on an array list, the old last cell still holds a stale copy of
+  the last value. Is this a bug? Which field makes the value harmless, and when would the
+  stale value matter?
+\item Distinguish \cc{malloc}/\cc{free} from \cc{new}/\cc{delete}. Define a \emph{dangling
+  pointer} and a \emph{memory leak} and give a two-line example of each.
+\item A function \cc{void append(node *h, int x)} correctly appends to a non-empty list
+  but silently fails when the list is empty. Why? Give two different repairs.
+\item An array list currently holds $s$ items. How many items are moved by
+  \cc{insert(p,x)} (positions $0\le p\le s$) and by \cc{erase(p)}? For which $p$ is each
+  worst, and what is that worst case?
+\item A dynamic array doubles its capacity when full. Show that $n$ successive
+  \cc{push\_back} calls cost $O(n)$ in total. Why does growing by a constant $+10$ instead
+  give $\Theta(n^2)$ total?
+\item Why is it a mistake to halve the capacity as soon as $n\le\mathit{cap}/2$? Describe
+  a bad sequence and a safe shrinking rule.
+\item Binary search on a sorted array list needs what precondition and takes what time?
+  Explain why a sorted-list insert nevertheless remains $\Theta(n)$ in the worst case
+  even though the position is found in $O(\log n)$.
+\item In the circular-array queue with fields (\cc{front}, \cc{size}) and capacity
+  \cc{CAP}: write the index of the front item, of the back item, and of the next free
+  cell. Which values of (\cc{front}, \cc{size}) with $\cc{CAP}=4$ describe a full queue
+  whose back item is at index 2?
+\end{questions}
+
+\section*{Linked lists}
+\begin{questions}[resume]
+\item For which operations does adding a tail pointer to a head-only SLL improve the
+  running time, and from what to what? Which operation stays $\Theta(n)$ even with a tail
+  pointer?
+\item Explain precisely why \cc{pop\_back} on an SLL is $\Theta(n)$ even though a tail
+  pointer is available.
+\item A DLL node \cc{c} must be inserted between neighbouring nodes \cc{a} and \cc{b}
+  (with \cc{a->next==b}). List every pointer assignment.
+\item List the four cases that occur when removing a node \cc{cur} from a DLL with
+  \cc{head}/\cc{tail} pointers, and the assignments for each.
+\item What is a sentinel (dummy) node? Name two special cases it removes from list code,
+  and one cost.
+\item Describe the slow--fast pointer technique and use it to find the middle node of an
+  SLL in one pass. What is returned for a list of even length, with the usual loop
+  condition?
+\item State the loop invariant of the three-pointer in-place reversal of an SLL, and the
+  running time and extra space.
+\item Define \emph{shallow copy} and \emph{deep copy} of a linked list. If \cc{l = m;} is
+  executed for two list structs and \cc{m} is then destroyed node by node, what happens
+  to \cc{l}?
+\item What is \emph{splicing}? Which pointers change when the whole of list \cc{m} is
+  spliced after node \cc{p} of list \cc{l}, and why is the cost $\Theta(1)$ only if some
+  pointer is already known?
+\item An SLL keeps \cc{head}, \cc{tail} and \cc{mid}. State the invariant for \cc{mid}.
+  Which of \cc{push\_front}, \cc{push\_back}, \cc{pop\_front}, \cc{pop\_back},
+  \cc{middle} can be $\Theta(1)$ and which not? Which change to the node type would make
+  all of them $\Theta(1)$?
+\end{questions}
+
+\section*{Stacks}
+\begin{questions}[resume]
+\item Define the stack ADT and give three applications. Which end of a singly linked list
+  should serve as the top, and why?
+\item Explain why a queue built from two stacks has amortised $\Theta(1)$ cost per
+  operation although a single dequeue may cost $\Theta(n)$.
+\item Show with the string \cc{([)]} that counting the opening and closing brackets of
+  each kind is not enough to test for balance, and say what data structure is.
+\item Convert $(a+b)*c-d/e$ to postfix and to prefix.
+\item Evaluate the postfix expression \cc{5 1 2 + 4 * + 3 -}, showing the stack after
+  each token.
+\item Convert \cc{a-b*c+d/(e-f)} to postfix with the shunting-yard algorithm, showing the
+  operator stack after each token. Then explain what changes for \cc{8-3-2} if the
+  algorithm pops only operators of \emph{strictly} higher precedence.
+\item The numbers $1,2,3,4,5$ are pushed in this order onto a stack, with pops
+  interleaved arbitrarily. Which of the following output sequences are possible? For each
+  possible one give the push/pop word; for each impossible one name the forbidden pattern.
+  (a)~\cc{3 2 5 4 1}; (b)~\cc{4 1 3 2 5}; (c)~\cc{1 2 3 4 5}; (d)~\cc{4 3 5 1 2}. How
+  many orders are possible for $1,2,3,4$?
+\item Give the next greater element of every item of $[4,5,2,25,7,18]$ (or $-1$), the
+  stack after each step of the monotonic-stack algorithm, and an argument that the
+  algorithm is $\Theta(n)$ although it contains a loop inside a loop.
+\item A min stack stores two stacks \cc{all} and \cc{mins}. Give both after the pushes
+  $5,3,7,3,1$, then after two pops, and the value of \cc{min()} at the end. Why is it
+  wrong to store only one variable \cc{currentMin}?
+\end{questions}
+
+\section*{Queues and deques}
+\begin{questions}[resume]
+\item A circular queue stores \cc{front} and \cc{rear} (the index \emph{after} the last
+  item) instead of \cc{size}, in an array of $\cc{CAP}=6$ cells. (a)~How many items does
+  it hold when $\cc{front}=4$, $\cc{rear}=1$? (b)~Why must one cell stay unused, and what
+  are the tests for empty and for full?
+\item In a linked queue, why is the front the \emph{head} and not the tail? Which field
+  must \cc{dequeue} update when it removes the last item, and what happens on the next
+  \cc{enqueue} if it does not?
+\item Give the values of the C expressions \cc{-7/2}, \cc{-7\%2}, \cc{7\%-2},
+  \cc{(0-1)\%5} and \cc{(0-1+5)\%5}. Explain the bug in
+  \cc{front = (front - 1) \% CAP;} inside \cc{push\_front}.
+\item Starting from an empty deque, perform \cc{push\_front(1)}, \cc{push\_back(2)},
+  \cc{push\_front(3)}, \cc{pop\_back()}, \cc{push\_back(4)}, \cc{push\_front(5)},
+  \cc{pop\_front()}. Give the value returned by each pop and the final contents from front
+  to back.
+\item Why can a plain queue not maintain the maximum of a sliding window, while a deque
+  can? Give the window maxima of $[9,1,8,2,7,3]$ with $k=2$, and prove that the monotonic
+  deque algorithm performs at most $2n$ pushes and pops.
+\item An ArrayDeque holds $n=10$ items. How many items are moved by (a)~\cc{add(2,x)},
+  (b)~\cc{add(7,x)}, (c)~\cc{remove(5)}, each applied to the original deque? What is the
+  worst case, and why is it half that of an array list?
+\item A linked deque keeps its sentinel node \emph{inside} the struct
+  (\cc{linkedDeque\{ dqnode sentinel; int size; \}}). How many pointer assignments does
+  \cc{push\_front} perform on a non-empty deque, and on an empty one? What goes wrong after
+  \cc{linkedDeque e = d;}?
+\item Seven people numbered $1..7$ stand in a circle and every third person is removed,
+  counting from person 1. Give the order of removal and the survivor, and check the
+  survivor with the recurrence $J(i)=(J(i-1)+k)\bmod i$.
+\item For each task name the most suitable ADT (stack, queue or deque) and say why:
+  (a)~undo in an editor; (b)~a printer spooler; (c)~browser history that keeps only the
+  last 50 pages but supports \emph{back}; (d)~checking matching HTML tags; (e)~the
+  maximum of the last $k$ readings of a sensor; (f)~serving customers in order of arrival.
+\end{questions}

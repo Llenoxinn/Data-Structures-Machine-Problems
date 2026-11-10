@@ -1,0 +1,104 @@
+\section{Deques}
+
+\solution{Problem}{50}
+\idea The circular deque of Listing~\ref{lst:deque} with a run-time capacity. Front
+insertion steps \cc{front} back with \cc{(front - 1 + cap) \% cap}; rear deletion only
+decreases \cc{size}; the rear item is at \cc{(front + size - 1) \% cap}.
+\listingfile{sol/p50.c}{A circular deque of capacity $k$.}
+\complexity Every operation $\Theta(1)$.
+\mistakes \cc{(front - 1) \% cap}, which is $-1$ when \cc{front} is 0
+(Tracing~\ref{trace:21}); using the constant 1000 instead of \cc{cap} in the modulo
+(the deque then wraps at the wrong place); testing fullness with \cc{size == 1000}.
+
+\solution{Problem}{51}
+The solution is Listing~\ref{lst:linkeddeque} of Chapter~\ref{ch:deques};
+Tracing~\ref{trace:25} runs it.
+\idea With the sentinel closed into a circle, every insertion is
+\cc{ldLinkBetween(a, b)} for two neighbours and every removal is \cc{ldUnlink(n)}; the
+four end operations differ only in the neighbours they pass.
+\complexity Every operation $\Theta(1)$; \cc{ldFree} $\Theta(n)$.
+\mistakes Initialising the sentinel's pointers to \cc{NULL} instead of to itself; copying
+the struct (bonus: the copy's sentinel has a different address, while the nodes still
+point to the original sentinel, so walks from the copy never return to it); freeing a
+node before reading its neighbours.
+
+\solution{Problem}{52}
+\idea Filter and lower-case the characters into a deque; then repeatedly pop one from
+each end and compare, until at most one is left.
+\listingfile{sol/p52.c}{Valid palindrome with a deque.}
+\complexity $\Theta(n)$ time and $O(n)$ space. Bonus: two indices from both ends that
+skip non-alphanumeric characters give $O(1)$ space.
+\mistakes Comparing upper and lower case directly; keeping spaces and punctuation;
+forgetting the digits (\cc{"0P"} is not a palindrome).
+
+\solution{Problem}{53}
+The solution is Listing~\ref{lst:slidingmax} of Chapter~\ref{ch:deques}, with the
+correctness proof there; Tracing~\ref{trace:23} follows the deque.
+\idea A deque of indices with decreasing values: expired indices leave from the front,
+dominated ones from the back, and the front is the maximum.
+\complexity $\Theta(n)$ time, $O(k)$ space.
+\mistakes Storing values (expiry cannot be detected); expiring with \cc{j < i - k}
+(one window too late); reading the maximum before the first window is complete.
+
+\solution{Problem}{54}
+\idea Two pointers \cc{left} and \cc{right} delimit the window. For each new \cc{right},
+update a decreasing deque (front: index of the maximum) and an increasing deque (front:
+index of the minimum). While $\max-\min>\mathit{limit}$, advance \cc{left} and drop the
+front of a deque when its index has fallen out. The window is then the longest valid one
+ending at \cc{right}.
+\listingfile{sol/p54.c}{Longest subarray with $\max-\min\le\mathit{limit}$.}
+\complexity $\Theta(n)$: each index enters and leaves each deque at most once, and
+\cc{left} only increases.
+\mistakes Recomputing the maximum and minimum of the window by a scan ($\Theta(n^2)$);
+moving \cc{left} by more than one per iteration of the inner loop without checking the
+deques.
+
+\solution{Problem}{55}
+\idea Split the queue into two deques, \cc{left} (the first half) and \cc{right} (the
+second half), with the invariant $|\mathit{right}|-|\mathit{left}|\in\{0,1\}$. Then the
+middle is next to the boundary: \cc{pushMiddle} goes to the back of \cc{left} or the
+front of \cc{right}, \cc{popMiddle} takes the back of \cc{left} (equal sizes) or the front
+of \cc{right}. Front and back operations touch one deque and then \cc{rebalance} moves at
+most one item across the boundary.
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}[x=7.5mm]
+\foreach \v [count=\i from 0] in {1,4} \node[cell,sh] (l\i) at (\i,0) {\v};
+\foreach \v [count=\i from 0] in {3,2} \node[cell] (r\i) at (\i+3,0) {\v};
+\node[above,font=\scriptsize] at (0.5,0.45) {\texttt{left}};
+\node[above,font=\scriptsize] at (3.5,0.45) {\texttt{right}};
+\draw[dashed] (2,-0.6) -- (2,0.8);
+\node[right,font=\scriptsize,align=left] at (5.2,0) {queue \texttt{1 4 3 2}, $n=4$:\\
+\texttt{pushMiddle} would go to the front of \texttt{right} (index 2);\\
+\texttt{popMiddle} takes the back of \texttt{left}, 4 (index 1).};
+\end{tikzpicture}
+\caption{The front-middle-back queue after the first four test operations.}
+\end{figure}
+
+\listingfile{sol/p55.c}{Front-middle-back queue.}
+\complexity Every operation $\Theta(1)$.
+\mistakes Using the \emph{back} middle when the size is even (the statement asks for the
+front-most); rebalancing after \cc{pushMiddle}/\cc{popMiddle} with the wrong rule ---
+here the choice of side already preserves the invariant; forgetting the empty case
+(\cc{right} is empty only if both are).
+
+\solution{Problem}{56}
+The solution is Listing~\ref{lst:arraydeque} of Chapter~\ref{ch:deques};
+Tracing~\ref{trace:22} counts the moves.
+\idea If $i<n/2$, move the $i$ items before position $i$ one cell to the left (after
+\cc{j} steps back), otherwise move the $n-i$ items from position $i$ on one cell to the
+right. Removal mirrors this.
+\complexity $O(1+\min(i,n-i))$ per operation.
+\mistakes Moving the left block in the wrong order (when moving left, copy from the lowest
+index up; when moving right, from the highest index down); \cc{j-1} without \cc{+100};
+forgetting that \cc{adAdd} accepts $i=n$ but \cc{adRemove} does not.
+
+\solution{Problem}{57}
+\idea Dynamic programming: $\mathit{best}[i]=a[i]+\max(\mathit{best}[i-k..i-1])$, with
+$\mathit{best}[0]=a[0]$. The maximum over the last $k$ values is a sliding window maximum,
+kept by a deque of indices whose $\mathit{best}$ values decrease from front to back.
+\listingfile{sol/p57.c}{Jump game VI.}
+\complexity $\Theta(n)$ time (each index enters and leaves the deque once) and $\Theta(n)$
+space for \cc{best}; the direct DP is $\Theta(nk)$.
+\mistakes A greedy jump to the largest reachable value (it fails on the third sample test); expiring the front with \cc{j <= i - k} (index $i-k$ is still reachable);
+storing $a$ instead of $\mathit{best}$ in the comparisons.

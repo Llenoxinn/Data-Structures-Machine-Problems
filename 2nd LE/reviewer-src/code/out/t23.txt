@@ -1,0 +1,8 @@
+i=0 a[i]= 4 dq=[0]
+i=1 a[i]= 2 dq=[0 1]
+i=2 a[i]=12 dq=[2] max=12
+i=3 a[i]= 3 dq=[2 3] max=12
+i=4 a[i]= 8 dq=[2 4] max=12
+i=5 a[i]= 8 dq=[5] max=8
+i=6 a[i]= 1 dq=[5 6] max=8
+i=7 a[i]= 5 dq=[5 7] max=8

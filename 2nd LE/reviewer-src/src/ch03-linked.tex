@@ -1,0 +1,244 @@
+\chapter{Linked Lists}\label{ch:linked}
+
+An array list is rigid: insertion in the middle moves everything behind it, and growth
+copies the whole array. A \emph{linked list} gives up random access in exchange for cheap
+structural change. Instead of consecutive cells it uses \emph{nodes}, each holding an item
+and pointers to its neighbours.
+
+\section{The singly linked list}
+
+\begin{definition}[Singly linked list]
+A \emph{node} is a pair $(x,\mathit{next})$. A \emph{singly linked list} (SLL) is a pointer
+\cc{head} to the first node, optionally a pointer \cc{tail} to the last, and a counter
+\cc{size}. The last node's \cc{next} is \cc{NULL}; the empty list has \cc{head==NULL}.
+\end{definition}
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}
+\foreach \v/\x [count=\i] in {7/0,0/1.6,3/3.2,9/4.8} \llnode{n\i}{\x,0}{\v};
+\foreach \i [evaluate=\i as \j using int(\i+1)] in {1,2,3} \draw[ptr] (n\i p.center) -- (n\j.west);
+\draw[ptr] (n4p.center) -- ++(0.9,0) node[right] {\small$\times$};
+\node[lbl] (hd) at (0,1) {head}; \draw[ptr] (hd) -- (n1.north);
+\node[lbl] (tl) at (4.8,1) {tail}; \draw[ptr] (tl) -- (n4.north);
+\node[font=\small] at (2.4,-0.8) {\texttt{size} $=4$};
+\end{tikzpicture}
+\caption{A singly linked list with head and tail pointers.}
+\end{figure}
+
+\listingfile[label=lst:sll]{lib/sll.h}{The SLL with head, tail and size (file \cc{sll.h}); \cc{pushBack} and \cc{pushFront} are $\Theta(1)$.}
+
+\subsection{Insertion and removal at the ends}
+
+\para{push\_front (prepend)} Allocate $u$; set $u.\mathit{next}=\cc{head}$; set
+$\cc{head}=u$; if the list was empty also set $\cc{tail}=u$; increment \cc{size}.
+$\Theta(1)$.
+
+\para{push\_back (append)} Allocate $u$; if the list is empty set $\cc{head}=\cc{tail}=u$,
+otherwise $\cc{tail->next}=u$ and $\cc{tail}=u$. $\Theta(1)$ \emph{because the tail
+pointer exists}; without it, appending must walk the whole list, $\Theta(n)$.
+
+\para{pop\_front} Save the old head; $\cc{head}=\cc{head->next}$; if the list became empty
+set \cc{tail=NULL}; free the old node. $\Theta(1)$.
+
+\para{pop\_back} The new tail is the node \emph{before} the old tail, and a singly linked
+node cannot reach its predecessor: one must walk from \cc{head} to the second-to-last
+node, $n-2$ steps. $\Theta(n)$.
+
+\listingfile[label=lst:sllpop]{listings/sll_pop.c}{\cc{popFront} is $\Theta(1)$; \cc{popBack} is $\Theta(n)$.}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}lcc@{}}\toprule
+Operation & SLL (head+tail) & Why\\\midrule
+push\_front, pop\_front & $\Theta(1)$ & direct access to \cc{head}\\
+push\_back & $\Theta(1)$ & direct access to \cc{tail}\\
+pop\_back & $\Theta(n)$ & predecessor of \cc{tail} is unreachable\\
+insert / erase at position $p$ & $\Theta(p)$ & walk to the node at $p-1$\\
+\cc{get(i)}, \cc{set(i,x)}, search & $\Theta(i)$, $\Theta(n)$ & no random access\\\bottomrule
+\end{tabular}
+\caption{Costs for the singly linked list. A stack (push and pop at the head) and a FIFO
+queue (push at the tail, pop at the head) are therefore both $\Theta(1)$; a deque is not
+(pop\_back).}
+\end{table}
+
+\subsection{Case analysis: draw before you code}
+
+Almost every linked-list bug is a missed special case. When removing the node $t$ with
+predecessor $p$ (if any), the cases are:
+\begin{center}\small
+\begin{tabular}{@{}lll@{}}\toprule
+Case & Pointer repair & Also update\\\midrule
+$t$ is the only node & \cc{head=tail=NULL} & \cc{size}\\
+$t$ is the head (not only) & \cc{head=t->next} & \cc{size}\\
+$t$ is the tail (not only) & \cc{p->next=NULL} & \cc{tail=p}, \cc{size}\\
+$t$ in the middle & \cc{p->next=t->next} & \cc{size}\\\bottomrule
+\end{tabular}
+\end{center}
+Insertion has the analogous cases: into an empty list, at the front, at the end, in the
+middle. A \emph{dummy head node} (Section~\ref{sec:llpatterns}) removes the ``head'' case
+from the code.
+
+\section{The doubly linked list}
+
+\begin{definition}[Doubly linked list]
+Each node holds $(\mathit{prev},x,\mathit{next})$. A \emph{doubly linked list} (DLL) keeps
+\cc{head}, \cc{tail} and \cc{size}. Invariant: for every node $u$ with
+$u.\mathit{next}\ne\cc{NULL}$ we have $u.\mathit{next}.\mathit{prev}=u$; \cc{head->prev}
+and \cc{tail->next} are \cc{NULL}.
+\end{definition}
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}
+\foreach \v/\x [count=\i] in {7/0,0/1.8,3/3.6,9/5.4} {
+  \node[draw,minimum width=3mm,minimum height=6mm,inner sep=0pt] (l\i) at (\x-0.45,0) {};
+  \node[nd] (n\i) at (\x,0) {\v};
+  \node[draw,minimum width=3mm,minimum height=6mm,inner sep=0pt] (r\i) at (\x+0.45,0) {};}
+\foreach \i [evaluate=\i as \j using int(\i+1)] in {1,2,3} {
+  \draw[ptr] ([yshift=1.2mm]r\i.center) -- ([yshift=1.2mm]l\j.west);
+  \draw[ptr] ([yshift=-1.2mm]l\j.center) -- ([yshift=-1.2mm]r\i.east);}
+\node at (-1.2,0) {\small$\times$}; \draw[ptr] (l1.center) -- (-1.1,0);
+\node at (6.6,0) {\small$\times$}; \draw[ptr] (r4.center) -- (6.5,0);
+\node[lbl] (hd) at (0,1) {head}; \draw[ptr] (hd) -- (n1.north);
+\node[lbl] (tl) at (5.4,1) {tail}; \draw[ptr] (tl) -- (n4.north);
+\end{tikzpicture}
+\caption{A doubly linked list.}
+\end{figure}
+
+\para{What the extra pointer buys}
+\begin{itemize}
+\item pop\_back becomes $\Theta(1)$: \cc{tail = tail->prev; tail->next = NULL}.
+\item Given a pointer to \emph{any} node, that node can be unlinked in $\Theta(1)$ (no walk
+  to find its predecessor).
+\item Traversal works in both directions, so a node at index $i$ can be reached from the
+  nearer end in $\Theta(1+\min(i,n-i))$, and two pointers can walk towards each other
+  (palindromes, Problem~\ref{prob:20}).
+\item All four end operations are $\Theta(1)$: the DLL is a deque
+  (Chapter~\ref{ch:deques}).
+\end{itemize}
+The price is an extra pointer per node and \emph{twice as many pointer updates} per
+operation --- forgetting the backward link is the most common DLL bug.
+
+\listingfile[label=lst:dll]{lib/dll.h}{The doubly linked list used by the departmental exercises (file \cc{dll.h}: \cc{list}, \cc{node}, \cc{append}, \cc{display}).}
+
+\para{Removing a node (the four updates)} For a node \cc{cur} in a list \cc{l}:
+\begin{lstlisting}[numbers=none,frame=none,xleftmargin=1em]
+if (cur->prev != NULL) cur->prev->next = cur->next; else l->head = cur->next;
+if (cur->next != NULL) cur->next->prev = cur->prev; else l->tail = cur->prev;
+free(cur);  l->size--;
+\end{lstlisting}
+Each \cc{else} handles the case that \cc{cur} is at an end. See Problem~\ref{prob:13}.
+
+\subsection{Sentinel (dummy) nodes}\label{sec:sentinel}
+
+Every special case above exists because \cc{NULL} terminates the list. If a \emph{dummy}
+node that carries no item is linked into a cycle --- \cc{dummy.next} is the head,
+\cc{dummy.prev} is the tail, and the empty list has \cc{dummy.next=dummy.prev=\&dummy} ---
+then no pointer is ever \cc{NULL} and insertion before a node $w$ and removal of $w$ are
+uniform. The notes' DLList is built this way, with \cc{getNode(i)} walking from the
+nearer end:
+
+\listingfile[language=C++,label=lst:dllist]{listings/dllist.cpp}{DLList: a doubly linked list with a dummy node (tested against an array model).}
+
+All of \cc{get}, \cc{set}, \cc{add} and \cc{remove} cost $\Theta(1+\min(i,n-i))$; the
+pointer surgery itself is $\Theta(1)$ once the node is found. The C version of the same
+idea, specialised to a deque, is Problem~\ref{prob:51}.
+
+\section{Circular linked lists}\label{sec:circular}
+
+\begin{definition}[Circular list]
+In a \emph{circular} singly linked list the last node points back to the first instead of
+to \cc{NULL}. It suffices to keep a pointer \cc{last} to the last node: the first node is
+\cc{last->next}.
+\end{definition}
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}
+\foreach \v/\x [count=\i] in {1/0,2/1.6,3/3.2} \llnode{c\i}{\x,0}{\v};
+\draw[ptr] (c1p.center) -- (c2.west); \draw[ptr] (c2p.center) -- (c3.west);
+\draw[ptr] (c3p.center) -- ++(0.5,0) |- ++(0,-0.7) -| (c1.south);
+\node[lbl] (ls) at (3.2,1) {last}; \draw[ptr] (ls) -- (c3.north);
+\node[right,font=\scriptsize,align=left] at (4.4,0) {first $=$ \texttt{last->next}\\ rotate by one: \texttt{last = last->next}};
+\end{tikzpicture}
+\caption{A circular singly linked list kept by its last node only.}
+\end{figure}
+
+With one pointer, both queue operations are $\Theta(1)$: enqueue links the new node
+after \cc{last} and makes it the new \cc{last}; dequeue unlinks \cc{last->next}.
+\emph{Rotating} the circle (moving the front item to the back) is a single assignment
+\cc{last = last->next}, which is why circular lists suit round-robin scheduling and the
+Josephus problem.
+
+\listingfile[label=lst:circular]{listings/circular.c}{A queue on a circular list with only a \cc{last} pointer.}
+
+The traps: the one-node circle points to itself (\cc{n->next = n}); removing the only node
+must set \cc{last} to \cc{NULL}; and a traversal must stop when it comes back to its
+starting node, not at \cc{NULL} (Tracing~\ref{trace:24}).
+
+\section{Programming patterns}\label{sec:llpatterns}
+
+\para{Erase while iterating} Never advance with \cc{cur = cur->next} \emph{after} freeing
+\cc{cur}. Save \cc{nxt = cur->next} \emph{first}, then free, then \cc{cur = nxt}.
+
+\para{Dummy head} For a singly linked list, create a local node \cc{dummy} with
+\cc{dummy.next = head}. The code that reaches ``the node before the target'' then works
+even when the target is the head. At the end set \cc{head = dummy.next} (and repair
+\cc{tail} if the removal could have reached the end).
+
+\para{Two pointers at different speeds or gaps}
+\begin{itemize}
+\item \emph{Middle}: \cc{slow} moves one node, \cc{fast} two, per step; when \cc{fast}
+  falls off the end, \cc{slow} is at the middle. One pass.
+\item \emph{$k$-th node from the end}: move \cc{lead} $k$ nodes ahead of \cc{lag}, then
+  advance both until \cc{lead} is \cc{NULL}.
+\item \emph{Cycle detection (Floyd)}: if the list has a cycle \cc{fast} laps \cc{slow}; they
+  meet. Restarting one pointer at \cc{head} and advancing both by one meets at the first
+  cycle node.
+\end{itemize}
+
+\para{Reversal} The invariant of the three-pointer loop is: the nodes before \cc{cur}
+already form a reversed list headed by \cc{prev}.
+
+\para{Recursion on lists} A list is either empty or a node followed by a list, so recursive
+procedures mirror the definition. To \emph{change} the list structurally with recursion,
+pass the address of the pointer that must change: \cc{void append(node **h, int x)}. Then
+\cc{*h} is ``the pointer that currently points at the rest of the list''; the base case
+\cc{*h==NULL} stores the new node \emph{into that pointer}, and the recursive case passes
+\cc{\&((*h)->next)}. This is exactly why the double pointer is needed --- a single
+\cc{node *h} would be a copy (Tracing~\ref{trace:7}).
+
+\para{Copying: shallow versus deep} Assigning one list \emph{struct} to another copies
+\cc{head}, \cc{tail}, \cc{size} but not the nodes: both variables then share every node,
+and freeing one invalidates the other. A \emph{deep copy} allocates a new node for every
+item. A routine such as \cc{appendList(l, m)} that must survive the later destruction of
+\cc{m} has to deep copy (Problem~\ref{prob:14}). A struct that contains its own sentinel
+node must never be copied at all (Tracing~\ref{trace:25}).
+
+\para{Moving versus copying; splicing} If the donor list is allowed to give up its nodes,
+the nodes can simply be \emph{relinked}: with a tail pointer, appending a whole list to
+another costs $\Theta(1)$, and inserting it after a known node is $\Theta(1)$. This is
+the list \emph{splice} (Problem~\ref{prob:18}); it is the operation that arrays can never
+do in constant time.
+
+\para{Augmenting the list} Extra bookkeeping pointers (such as a pointer to the middle
+node) make some queries $\Theta(1)$ at the price of keeping the extra pointer correct in
+\emph{every} update. The design question is always: how does this operation change the
+index of the node the extra pointer must designate? Problem~\ref{prob:24} works this out
+in full.
+
+\section{Arrays versus linked lists}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}lccc@{}}\toprule
+Operation & Array list & SLL (head+tail) & DLL\\\midrule
+\cc{get(i)} & $\Theta(1)$ & $\Theta(i)$ & $\Theta(\min(i,n-i))$\\
+insert / erase at front & $\Theta(n)$ & $\Theta(1)$ & $\Theta(1)$\\
+insert at rear & $\Theta(1)$ & $\Theta(1)$ & $\Theta(1)$\\
+erase at rear & $\Theta(1)$ & $\Theta(n)$ & $\Theta(1)$\\
+insert / erase after a known node & $\Theta(n)$ & $\Theta(1)$ & $\Theta(1)$\\
+erase a known node & $\Theta(n)$ & $\Theta(n)$ & $\Theta(1)$\\
+splice one list into another & $\Theta(n)$ & $\Theta(1)$ & $\Theta(1)$\\
+memory per item & item & item + 1 pointer & item + 2 pointers\\
+cache behaviour & contiguous & scattered & scattered\\\bottomrule
+\end{tabular}
+\caption{When position matters, choose the array; when structural change matters, choose
+the linked list.}
+\end{table}

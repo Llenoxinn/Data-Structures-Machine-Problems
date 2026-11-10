@@ -1,0 +1,225 @@
+\section{Linked lists}
+
+\solution{Problem}{13}
+\idea Walk the list once. For a node \cc{cur} holding $x$, make its predecessor skip it
+(or, if it has none, move \cc{head}), make its successor skip it backwards (or move
+\cc{tail}), free it and decrease \cc{size}. The successor must be saved \emph{before} the
+node is freed. The two \cc{if/else} statements cover the four cases of Question~16 of
+Section~A: only node, head, tail, middle.
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}[x=1cm]
+\foreach \v/\x [count=\i] in {5/0,2/2,7/4} \node[nd,minimum width=8mm] (n\i) at (\x,0) {\v};
+\node[nd,minimum width=8mm,shd] at (2,0) {2};
+\draw[ptr] (n1.20) -- (n2.160); \draw[ptr] (n2.200) -- (n1.-20);
+\draw[ptr] (n2.20) -- (n3.160); \draw[ptr] (n3.200) -- (n2.-20);
+\draw[ptr,dashed,thick] (n1.north) to[out=40,in=140] node[above,font=\scriptsize]{\texttt{cur->prev->next = cur->next}} (n3.north);
+\draw[ptr,dashed,thick] (n3.south) to[out=-140,in=-40] node[below,font=\scriptsize]{\texttt{cur->next->prev = cur->prev}} (n1.south);
+\node[lbl] at (2,0.55) {cur};
+\end{tikzpicture}
+\caption{Unlinking a middle node of a DLL: two pointer updates, then \cc{free(cur)}.}
+\end{figure}
+
+\listingfile{sol/p13.c}{eraseItems.}
+The departmental test program, reconstructed from the sample output, is shown below; it
+reproduces the sample output of the statement character for character.
+\programfile{notes/p13_template.c}
+\complexity $\Theta(n)$ time, one pass; $O(1)$ extra space.
+\mistakes Reading \cc{cur->next} after \cc{free(cur)}; updating \cc{head} but not
+\cc{head->prev} (here done by the second \cc{if}); forgetting \cc{tail} when the last node
+is removed (the backward display then starts from a freed node); calling \cc{search} and
+\cc{erase} in a loop. Such a loop restarts from the head after every removal. On
+\cc{3 3 3 3 3} that costs nothing, since every match is at the head, but on
+\cc{1 1 1 1 1 3 3 3 3 3} each of the $n/2$ searches walks past the same $n/2$ ones:
+$\Theta(n^2)$ in total (bonus).
+
+\solution{Problem}{14}
+\idea \cc{m} is passed by value, but only the struct is copied: \cc{m.head} points to the
+caller's nodes. Appending those nodes to \cc{l} would make \cc{l} share them, and
+destroying \cc{m} would free them. So each item is \emph{copied} into a new node linked
+at the tail of \cc{l}. The loop is counted with \cc{m.size}, not run until \cc{NULL}:
+in \cc{appendList(\&x, x)} the list grows while it is being read, and a loop until
+\cc{NULL} would never end; the counted loop stops after the original $|m|$ items (bonus).
+\listingfile{sol/p14.c}{appendList.}
+\programfile{notes/p14_template.c}
+\complexity $\Theta(|m|)$ time.
+\mistakes Linking \cc{m}'s nodes directly (shallow copy); forgetting the empty \cc{l}
+(\cc{head} must be set); forgetting \cc{prev}; empty \cc{m} must leave \cc{l} unchanged.
+
+\solution{Problem}{15}
+\idea \cc{*h} is the pointer that leads to the rest of the list: \cc{head} at the top
+level, then \cc{head->next}, and so on. If it is \cc{NULL}, the new node is stored
+\emph{there}: this changes \cc{head} for an empty list and the last \cc{next} field
+otherwise. Else recurse on the address of the next field. The loop version walks the same
+pointer-to-pointer.
+\listingfile{sol/p15.c}{append with a double pointer, recursive and iterative.}
+\complexity $\Theta(n)$ time. The recursion depth is $n+1$, so the recursive version uses
+$\Theta(n)$ stack and can overflow for very long lists; the loop uses $O(1)$.
+\mistakes Passing \cc{l.head} instead of \cc{\&l.head}; writing \cc{append((*h)->next, x)}
+(type error: that is a \cc{snode *}); allocating the node before the recursion (one node
+per level would leak).
+
+\solution{Problem}{16}
+\idea Three pointers: \cc{prev} (the reversed part), \cc{cur} (the next node to turn
+around) and \cc{nxt} (saved before \cc{cur->next} is overwritten). See Question~19 of
+Section~A for the invariant. Afterwards the old head is the tail.
+\listingfile{sol/p16.c}{Reversing an SLL, iteratively and recursively.}
+\complexity $\Theta(n)$ time; $O(1)$ space iteratively, $\Theta(n)$ stack recursively.
+\mistakes Losing the rest of the list by not saving \cc{nxt}; forgetting to update
+\cc{tail}; in the recursive version, forgetting \cc{h->next = NULL}, which leaves a
+two-node cycle at the end.
+
+\solution{Problem}{17}
+\idea Middle: slow and fast pointers (Question~18 of Section~A). $k$-th from the end: send
+\cc{lead} $k$ nodes ahead; then move both until \cc{lead} falls off the end; \cc{lag} is
+$k$ nodes behind the end. If \cc{lead} falls off during the head start, $k>n$.
+\listingfile{sol/p17.c}{Middle and $k$-th from the end.}
+\complexity $\Theta(n)$ time, one traversal, $O(1)$ space. For the first middle, use the
+condition \cc{fast->next != NULL \&\& fast->next->next != NULL} (the fast pointer stops
+one step earlier).
+\mistakes Off-by-one in the head start (moving $k-1$ instead of $k$); not checking $k<1$;
+dereferencing \cc{lead} after it became \cc{NULL}.
+
+\solution{Problem}{18}
+\idea Splicing changes three pointers: the anchor's \cc{next} (or \cc{head}), the
+\cc{next} of \cc{m}'s tail, and \cc{l}'s \cc{tail} if the splice is at the end. \cc{splice}
+walks to the node at index $\cc{pos}-1$ and calls \cc{spliceAfter}.
+\listingfile{sol/p18.c}{Splicing.}
+\complexity \cc{spliceAfter}: $\Theta(1)$. \cc{splice}: $\Theta(\cc{pos})$. An array list
+would have to copy all $|m|$ items (bonus), $\Theta(|m|)$ even at the end.
+\mistakes Forgetting \cc{l->tail} when splicing at the end; not emptying \cc{m}, so that
+both lists own the nodes (a later destroy frees them twice); an empty \cc{m} has
+\cc{m->tail == NULL}, so it must be handled first.
+
+\solution{Problem}{19}
+\idea Build the merged chain with \cc{head}/\cc{last}, taking the smaller front node from
+\cc{x} or \cc{y} each time (\cc{<=} keeps \cc{a}'s node first on ties) and setting its
+\cc{prev} to \cc{last}. Nothing is allocated; at the end \cc{a} receives the chain and
+\cc{b} is emptied.
+\listingfile{sol/p19.c}{Merging two sorted DLLs.}
+\complexity $\Theta(|a|+|b|)$ time, $O(1)$ space. For the bonus, when one list is
+exhausted, link the remainder of the other with one \cc{next} and one \cc{prev}
+assignment and take its tail.
+\mistakes Forgetting the \cc{prev} links (the forward display is right, the backward one
+is not); not resetting \cc{b}; taking \cc{y} on ties.
+
+\solution{Problem}{20}
+\idea Two pointers from both ends move toward each other. They stop when they meet (odd
+length) or cross (even length: \cc{left->prev == right}). An empty list has
+\cc{left == right == NULL} and skips the loop.
+\listingfile{sol/p20.c}{Palindromic DLL.}
+\complexity $\Theta(n)$ time, at most $\lfloor n/2\rfloor$ comparisons, $O(1)$ space.
+\mistakes With the condition \cc{left != right} alone, on an even length the pointers
+cross without ever being equal, and the loop runs until one of them is \cc{NULL}:
+a crash. Using a stack contradicts the permitted operations.
+
+\solution{Problem}{21}
+\idea In every node swap \cc{next} and \cc{prev}; then swap \cc{head} and \cc{tail}. The
+walk must use the \emph{saved} old \cc{next}.
+\listingfile{sol/p21.c}{Reversing a DLL.}
+\complexity $\Theta(n)$ time, $O(1)$ space.
+\mistakes Advancing with \cc{cur = cur->next} after the swap (that is the old
+\cc{prev}: the loop goes backwards and stops at once).
+
+\solution{Problem}{22}
+\idea Compare each node with its successor; if equal, unlink and free the successor and
+\emph{stay} on the current node (the next one may be equal too).
+\listingfile{sol/p22.c}{Removing duplicates from a sorted DLL.}
+\complexity $\Theta(n)$ time, $O(1)$ space.
+\mistakes Advancing after a removal, which skips the third copy of \cc{2 2 2}; forgetting
+\cc{tail} when the last node is removed.
+
+\solution{Problem}{23}
+\idea Find the first node greater than $x$ (\cc{cur}); the new node goes between
+\cc{cur->prev} and \cc{cur}. If \cc{cur} is \cc{NULL}, the node becomes the new tail; if
+its predecessor is \cc{NULL}, it becomes the new head. Both can happen (empty list).
+\listingfile{sol/p23.c}{Insertion into a sorted DLL.}
+\complexity $\Theta(n)$ time in the worst case. Bonus: if $x\ge$ \cc{tail->item}, link
+after the tail directly, $O(1)$.
+\mistakes Stopping at the first node $\ge x$ (equal items then end up after $x$, which
+is still sorted but violates the statement); forgetting \cc{prev} of the old neighbour.
+
+\solution{Problem}{24}
+\idea The middle index $\lfloor(\cc{size}-1)/2\rfloor$ moves right by one when \cc{size}
+goes from even to odd at the \emph{back} (a push at the back when the size was even) or
+when an item leaves at the \emph{front} with even size. It must move \emph{left} when an
+item is pushed at the front with odd size or popped at the back with odd size: an SLL
+cannot step back, so \cc{mid} is recomputed by a walk from the head.
+\listingfile{sol/p24.c}{An SLL with a middle pointer.}
+\complexity \cc{middle}, \cc{mPushBack}, \cc{mPopFront}: $\Theta(1)$. \cc{mPushFront}:
+$\Theta(1)$ for even size, $\Theta(n)$ for odd. \cc{mPopBack}: $\Theta(n)$ (it needs the
+node before the tail anyway). With a \cc{prev} pointer every move of \cc{mid} and the
+new tail are one step away, so all are $\Theta(1)$ (bonus). Tracing~\ref{trace:16} shows
+\cc{mid} after each operation.
+\mistakes Moving \cc{mid} in the wrong direction or on the wrong parity; forgetting the
+one-node case, where all three pointers become \cc{NULL}.
+
+\solution{Problem}{25}
+\idea Reduce $k$ modulo $n$. Close the list into a circle (\cc{tail->next = head}), then
+cut it after the $k$-th node: the node after the cut is the new head, the $k$-th node the
+new tail.
+\listingfile{sol/p25.c}{Rotating a list to the left.}
+\complexity $\Theta(n)$ time; no allocation.
+\mistakes Not reducing $k$ ($10^9$ steps); not handling $k\bmod n=0$, which would cut
+after the $n$-th node and make the head \cc{NULL}; forgetting to update \cc{tail}.
+
+\solution{Problem}{26}
+\idea Two chains with dummy heads: one for the items $<x$, one for the others. Each node
+is appended to its chain in order; at the end the first chain is followed by the second,
+and the second is terminated with \cc{NULL}. The dummies are local \cc{snode} variables,
+so nothing is allocated.
+\listingfile{sol/p26.c}{Partitioning a list.}
+\complexity $\Theta(n)$ time, one pass, $O(1)$ space.
+\mistakes Forgetting \cc{big->next = NULL}, which can leave a cycle (the last big node may
+still point to a small node); updating \cc{tail} wrongly when one chain is empty.
+
+\solution{Problem}{27}
+\idea The lead/lag technique of Problem~17, started from a dummy node in front of the
+head, stops \cc{lag} on the node \emph{before} the target. Then one assignment unlinks
+the target, whether it is the head or not.
+\listingfile{sol/p27.c}{Removing the $n$-th node from the end.}
+\complexity $\Theta(|l|)$ time, one pass.
+\mistakes Stopping \cc{lag} on the target itself (an SLL cannot unlink a node without its
+predecessor); forgetting \cc{tail} when the last node is removed; not freeing the node.
+
+\solution{Problem}{28}
+\idea With \cc{prev} before the pair \cc{a}, \cc{b}: \cc{a->next = b->next},
+\cc{b->next = a}, \cc{prev->next = b}; then \cc{a} is the node before the next pair. A
+dummy node makes the first pair like the others.
+\listingfile{sol/p28.c}{Swapping nodes in pairs.}
+\complexity $\Theta(n)$ time, $O(1)$ space.
+\mistakes The order of the three assignments (doing \cc{b->next = a} first loses the rest
+of the list); swapping the \emph{items}, which the statement forbids; the tail is \cc{a}
+when the last pair is swapped and unchanged when a single node is left over.
+
+\solution{Problem}{29}
+\idea Floyd's tortoise and hare. If there is no cycle, \cc{fast} reaches \cc{NULL}. If
+there is one, both pointers end up inside it, and the distance between them shrinks by
+one per step, so they meet. For the start: if the tail before the cycle has length
+$\mu$, the cycle length $\lambda$, and they meet $t$ nodes into the cycle, then
+$2(\mu+t)\equiv\mu+t\pmod\lambda$, so $\mu\equiv-t\pmod\lambda$: walking $\mu$ more steps
+from the meeting point reaches the start, and so does walking $\mu$ steps from the head.
+\listingfile{sol/p29.c}{Cycle detection and the start of the cycle.}
+\complexity $\Theta(n)$ time, $O(1)$ space.
+\mistakes Testing \cc{slow == fast} before the first move (they start equal); checking
+only \cc{fast != NULL} before \cc{fast->next->next}.
+
+\solution{Problem}{30}
+\idea Two chains threaded through the list: \cc{odd} takes \cc{even->next}, \cc{even}
+takes \cc{odd->next}. At the end the odd chain is followed by the even chain, whose last
+node is the new tail.
+\listingfile{sol/p30.c}{Grouping odd and even positions.}
+\complexity $\Theta(n)$ time, $O(1)$ space.
+\mistakes Grouping by \emph{value} parity; losing the head of the even chain (save
+\cc{evenHead}); leaving the even chain unterminated.
+
+\solution{Problem}{31}
+\idea Schoolbook addition from the least significant digit: add the two digits (missing
+digits count as 0) and the carry; push \cc{sum \% 10}; carry \cc{sum / 10}. Continue
+while either list has digits \emph{or} the carry is non-zero.
+\listingfile{sol/p31.c}{Adding numbers stored in lists.}
+\complexity $\Theta(\max(|a|,|b|))$ time. For the bonus (most significant digit first),
+reverse both lists (Problem~16), add, and reverse the result; or push the digits on two
+stacks.
+\mistakes Forgetting the final carry ($99+1$); stopping at the end of the shorter list;
+converting to \cc{int} or \cc{long}, which overflows.

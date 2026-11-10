@@ -1,0 +1,207 @@
+\chapter{Solutions to Section A}\label{ch:solconcepts}
+
+Model answers to the concept questions of Chapter~\ref{ch:concepts}; the numbers agree.
+
+\begin{questions}
+\item An \emph{abstract data type} is a mathematical model consisting of a set of values
+  and a set of operations on them; the representation is hidden. A \emph{data structure}
+  is a concrete way to realise an ADT in memory (an array, linked nodes), and it
+  determines the costs of the operations. Relatives of the List ADT: the stack, the queue
+  and the deque.
+\item (a)~True. For $n\ge2$, $\lg n\ge1$, so $23\le23\lg n$; take $c=23$, $n_0=2$.
+  (b)~False. Suppose $5\lg n\le c$ for all $n\ge n_0$; for $n>\max(n_0,2^{c/5})$ we get
+  $5\lg n>c$, a contradiction; the function is unbounded. (c)~True. For $n\ge1$,
+  $5n-7\le5n$; take $c=5$, $n_0=1$.
+\item (a)~$\Theta(1)$. (b)~$\Theta(n)$ (every item moves). (c)~$\Theta(1)$.
+  (d)~$\Theta(n)$ (the predecessor of the tail must be found from the head).
+  (e)~$\Theta(1)$. (f)~$\Theta(n)$ in the worst case: the cost is
+  $\Theta(\min(i,n-i))$, maximal near the middle. (g)~$\Theta(n)$. (h)~$\Theta(1)$:
+  one modular step of \cc{front} and one write.
+\item A struct containing an array is copied with the array, so the callee changes its own
+  copy: the caller sees no change. For a struct holding a pointer \cc{head}, the pointer
+  is copied but the nodes are shared: \cc{l.head->item=100} is visible to the caller,
+  while an assignment such as \cc{l.head=NULL} is not. A raw array parameter \cc{int a[]}
+  is really a pointer to the first element, so the change is visible.
+  (Tracing~\ref{trace:2}.)
+\item It is not a bug. The valid items are exactly \cc{items[0..size-1]}; \cc{size} is
+  the boundary, and cells beyond it are unspecified. The stale value matters only when
+  some code reads beyond \cc{size} without checking (for instance an \cc{itemAt} that
+  indexes without testing $p\le\cc{size}$), or when the cell owns a resource (e.g.\ a
+  pointer that was not released). The next \cc{push\_back} simply overwrites it.
+  (Tracing~\ref{trace:4}.)
+\item \cc{malloc}/\cc{free} are C library functions that allocate raw bytes (returning
+  \cc{void *}) and run no constructor; \cc{new}/\cc{delete} are C++ operators that are
+  type-aware and call constructors and destructors (\cc{new[]} pairs with \cc{delete[]});
+  the two families must not be mixed. A \emph{dangling pointer} points to memory that has
+  been freed or has gone out of scope:
+  \cc{int *p = (int*)malloc(4);} \cc{free(p);} \cc{*p = 1;}. A
+  \emph{memory leak} is allocated memory that is no longer reachable:
+  \cc{int *p = (int*)malloc(4);} \cc{p = NULL;}.
+\item The parameter \cc{h} is a copy of the caller's head pointer. For a non-empty list
+  the loop follows the copy to the real nodes and modifies them, which works; for an
+  empty list the function assigns the new node to the local copy only, so the caller's
+  \cc{head} stays \cc{NULL} and the node leaks. Repairs: (1)~pass the address,
+  \cc{void append(node **h, int x)}; (2)~return the (possibly new) head and write
+  \cc{l.head = append(l.head, x)}. (Tracing~\ref{trace:7}, Problem~\ref{prob:15}.)
+\item \cc{insert(p,x)} moves the $s-p$ items at positions $p..s-1$ one place to the
+  right; \cc{erase(p)} moves the $s-p-1$ items at positions $p+1..s-1$ one place to the
+  left. Both are worst at $p=0$: $s$ and $s-1$ moves, i.e.\ $\Theta(n)$; at the right end
+  they need $0$ moves.
+\item With doubling, the copying done at sizes $1,2,4,\dots,2^k<n$ totals less than $2n$,
+  plus $n$ writes: at most $3n$ operations, hence $O(1)$ amortised
+  (Theorem~\ref{thm:amortised}). Growing by a constant $c=10$ copies $10,20,30,\dots$
+  items, a total of $10(1+2+\dots+n/10)=\Theta(n^2)$, i.e.\ $\Theta(n)$ amortised per
+  \cc{push\_back}.
+\item Suppose the array has capacity $2m$ and holds $m$ items. Halving gives capacity
+  $m$, completely full: the next push must double again, and the next pop halves again.
+  Alternating push/pop costs $\Theta(n)$ per operation (\emph{thrashing}). The safe rule
+  is to shrink only when $n\le\mathit{cap}/4$ (or, as in the course, when
+  $\mathit{cap}\ge3n$): after the shrink the array is about half full, and $\Omega(n)$
+  cheap operations must occur before the next resize.
+\item The array must be sorted (non-decreasing); the search takes $\Theta(\log n)$
+  comparisons. \cc{insert} still needs to open a gap in a contiguous array: the items
+  after the position are shifted, up to $n$ of them, so the worst case is $\Theta(n)$.
+  The $\log n$ saving is for comparisons only.
+\item Front: \cc{items[front]}. Back: \cc{items[(front+size-1) \% CAP]}. Next free
+  cell: \cc{items[(front+size) \% CAP]}. A full queue has $\cc{size}=4$; the back index is
+  $(\cc{front}+3)\bmod4=2$ exactly when $\cc{front}=3$: so
+  $(\cc{front},\cc{size})=(3,4)$. (Tracing~\ref{trace:5}.)
+\item \cc{push\_back} improves from $\Theta(n)$ (walk to the end) to $\Theta(1)$;
+  \cc{push\_front} and \cc{pop\_front} are $\Theta(1)$ in both. \cc{pop\_back} stays
+  $\Theta(n)$ even with a tail pointer.
+\item After removing the tail, the new tail is the node before it. A node in an SLL has no
+  \cc{prev} link, so that node can only be found by walking from \cc{head} until
+  \cc{cur->next==tail}, $n-2$ steps. The tail pointer helps only to reach the old tail,
+  not its predecessor.
+\item \cc{c->prev=a; c->next=b; a->next=c; b->prev=c;} and \cc{size++}. If \cc{a} is
+  \cc{NULL} (insertion at the front) then \cc{head=c} instead of \cc{a->next=c}; if
+  \cc{b} is \cc{NULL} (at the end) then \cc{tail=c} instead of \cc{b->prev=c}.
+\item (1)~Only node: \cc{head = tail = NULL}. (2)~Head, with successor:
+  \cc{head = cur->next; head->prev = NULL}. (3)~Tail, with predecessor:
+  \cc{tail = cur->prev; tail->next = NULL}. (4)~Middle:
+  \cc{cur->prev->next = cur->next; cur->next->prev = cur->prev}. In all cases then
+  \cc{free(cur); size--}. The four cases collapse into two \cc{if/else} statements:
+  predecessor exists? set its \cc{next}, else set \cc{head}; successor exists? set its
+  \cc{prev}, else set \cc{tail}.
+\item A sentinel (dummy) node holds no item and is linked into a circular list so that no
+  pointer is ever \cc{NULL}. It removes (i)~the special case of an empty list and
+  (ii)~the separate updates of \cc{head} and \cc{tail}: insertion before a node and
+  removal of a node are the same few assignments everywhere. Costs: one extra node, and
+  traversals must stop at the sentinel rather than at \cc{NULL}.
+\item Two pointers start at the head; per iteration \cc{slow} moves one node, \cc{fast}
+  two. When \cc{fast} cannot make another full step (\cc{fast==NULL} or
+  \cc{fast->next==NULL}) \cc{slow} has covered half the distance, so it is at the
+  middle. With the loop condition \cc{fast!=NULL \&\& fast->next!=NULL}, odd length gives
+  the exact middle, even length gives the \emph{second} of the two middle nodes (for
+  $1,2,3,4$ it stops on 3).
+\item At the top of each iteration the nodes before \cc{cur} form a list in reversed order
+  whose head is \cc{prev}, and the nodes from \cc{cur} on are still in the original
+  order. Time $\Theta(n)$, extra space $O(1)$.
+\item A \emph{shallow copy} copies only the references (the struct with \cc{head},
+  \cc{tail}, \cc{size}); both variables share the same nodes. A \emph{deep copy}
+  allocates new nodes with copies of the items. After \cc{l = m} and the destruction of
+  \cc{m}, the nodes seen by \cc{l} have been freed: \cc{l.head} and \cc{l.tail} are
+  dangling, any use of \cc{l} is undefined behaviour, and destroying \cc{l} again is a
+  double free. (Tracing~\ref{trace:20}.)
+\item Splicing moves a chain of nodes from one list into another by changing pointers;
+  nothing is allocated or copied. To place all of \cc{m} after node \cc{p} of \cc{l}:
+  let \cc{q = p->next}; set \cc{p->next = m.head} and \cc{m.tail->next = q}; if \cc{q}
+  was \cc{NULL} then \cc{l.tail = m.tail}; add the sizes and empty \cc{m}. The cost is
+  $\Theta(1)$ only if \cc{p} is already known (or is the tail) and \cc{m} has a tail
+  pointer; locating the $i$-th node costs $\Theta(i)$. (Tracing~\ref{trace:19}.)
+\item Invariant: \cc{mid} points to the node at index $\lfloor(\cc{size}-1)/2\rfloor$. In
+  an SLL, \cc{middle}, \cc{pushBack} and \cc{popFront} are always $O(1)$; \cc{pushFront}
+  is $O(1)$ for even size but needs a backward step (a walk from the head, $\Theta(n)$)
+  for odd size; \cc{popBack} is $\Theta(n)$. Giving each node a \cc{prev} pointer (a
+  doubly linked list) makes every backward step $O(1)$ and hence all four end operations
+  $O(1)$. (Tracing~\ref{trace:16}, Problem~\ref{prob:24}.)
+\item A stack is a sequence accessed at one end only: \cc{push}, \cc{pop}, \cc{top},
+  \cc{empty}, \cc{size}; last in, first out. Applications: bracket matching,
+  infix-to-postfix conversion and postfix evaluation, undo/backtracking, the call stack
+  (recursion), depth-first search. In a singly linked list the head should be the top,
+  since \cc{push\_front} and \cc{pop\_front} are $\Theta(1)$ there, whereas
+  \cc{pop\_back} is $\Theta(n)$.
+\item Every item is moved from \cc{in} to \cc{out} at most once, because after the
+  transfer it leaves from \cc{out}. Charge 4 units to an enqueue (push onto \cc{in}, and
+  in advance: pop from \cc{in}, push onto \cc{out}, pop from \cc{out}); the later transfer
+  and the dequeue are then prepaid. $m$ operations therefore cost at most $4m$ stack
+  operations plus $O(1)$ each for the tests, so $\Theta(1)$ amortised, although one
+  dequeue that triggers a transfer of $n$ items costs $\Theta(n)$
+  (Theorem~\ref{thm:twostack}, Tracing~\ref{trace:12}).
+\item In \cc{([)]} each kind of bracket occurs equally often as opener and closer, yet the
+  nesting is wrong: \cc{)} arrives while \cc{[} is the most recent unclosed opener, so
+  the \cc{(} is closed before the \cc{[} opened inside it.
+  A stack is the right tool: the closer must match the most recently opened bracket.
+\item Postfix: \cc{ab+c*de/-}. Prefix: \cc{-*+abc/de}.
+\item Tokens \cc{5 1 2 + 4 * + 3 -}: push 5 $\to[5]$; push 1 $\to[5,1]$; push 2
+  $\to[5,1,2]$; \cc{+}: $1+2=3\to[5,3]$; push 4 $\to[5,3,4]$; \cc{*}: $3\cdot4=12\to
+  [5,12]$; \cc{+}: $5+12=17\to[17]$; push 3 $\to[17,3]$; \cc{-}: $17-3=14\to[14]$. The
+  value is 14.
+\item Operator stack (bottom to top) after each token: \cc{a}: empty; \cc{-}: \cc{-};
+  \cc{b}: \cc{-}; \cc{*}: \cc{- *} (\cc{*} binds tighter, nothing popped); \cc{c}:
+  \cc{- *}; \cc{+}: pop \cc{*}, then \cc{-} (equal precedence), push: \cc{+}; \cc{d}:
+  \cc{+}; \cc{/}: \cc{+ /}; \cc{(}: \cc{+ / (}; \cc{e}; \cc{-}: \cc{+ / ( -}; \cc{f};
+  \cc{)}: pop \cc{-}, discard \cc{(}: \cc{+ /}; end: pop \cc{/}, \cc{+}. Postfix:
+  \cc{abc*-def-/+}. With ``strictly higher'' the \cc{-} of \cc{8-3-2} is not popped
+  when the second \cc{-} arrives, giving \cc{832--} $=8-(3-2)=7$ instead of
+  \cc{83-2-} $=(8-3)-2=3$: subtraction would become right-associative.
+\item (a)~Possible: \cc{uuuoouuooo} (push 1,2,3; pop 3,2; push 4,5; pop 5,4,1).
+  (b)~Impossible: after 4 is printed the stack holds $1,2,3$ with 3 on top, so 1 cannot
+  come next; the pattern \emph{high, low, middle} is $4,1,3$ (or $4,1,2$).
+  (c)~Possible: \cc{uououououo}. (d)~Impossible: after \cc{4 3 5} the stack holds $1,2$
+  with 2 on top; pattern $4,1,2$. The number of stack permutations of $1..4$ is the
+  Catalan number $C_4=\frac{1}{5}\binom84=14$ (Section~\ref{sec:stackperm},
+  Tracing~\ref{trace:14}).
+\item Answers: $[5,25,25,-1,18,-1]$. Stack of waiting values after each item: $[4]$;
+  $[5]$ (4 answered by 5); $[5,2]$; $[25]$ (2 and 5 answered by 25); $[25,7]$;
+  $[25,18]$ (7 answered by 18); 25 and 18 are left and get $-1$. Every index is pushed
+  once and popped at most once, so the inner loop runs at most $n$ times \emph{in total}
+  over all rounds: $\Theta(n)$ (Theorem~\ref{thm:monostack}).
+\item After the pushes: \cc{all} $=[5,3,7,3,1]$, \cc{mins} $=[5,3,3,3,1]$. After two pops:
+  \cc{all} $=[5,3,7]$, \cc{mins} $=[5,3,3]$, and \cc{min()} $=3$. A single variable
+  cannot be restored when the minimum is popped: the previous minimum is no longer known
+  without scanning the whole stack, $\Theta(n)$.
+\item (a)~$(\cc{rear}-\cc{front}+\cc{CAP})\bmod\cc{CAP}=(1-4+6)\bmod6=3$ items (cells 4,
+  5, 0). (b)~With only \cc{front} and \cc{rear}, an empty and a full queue would both
+  have $\cc{front}=\cc{rear}$. Leaving one cell unused separates them: empty iff
+  $\cc{front}=\cc{rear}$, full iff $(\cc{rear}+1)\bmod\cc{CAP}=\cc{front}$; the capacity
+  is $\cc{CAP}-1=5$.
+\item Removal is $\Theta(1)$ only at the head of an SLL; insertion is $\Theta(1)$ at
+  both ends (with a tail pointer). Dequeue removes, so it must happen at the head.
+  When \cc{dequeue} removes the last item it must set \cc{tail = NULL} as well as
+  \cc{head}; otherwise \cc{tail} dangles, and the next \cc{enqueue} executes
+  \cc{tail->next = n} on freed memory and also fails to set \cc{head}.
+\item \cc{-7/2} $=-3$ (division truncates toward zero); \cc{-7\%2} $=-1$; \cc{7\%-2} $=1$
+  (the sign follows the left operand); \cc{(0-1)\%5} $=-1$; \cc{(0-1+5)\%5} $=4$. With
+  \cc{front = (front - 1) \% CAP}, a deque whose front is cell 0 gets $\cc{front}=-1$ and
+  the next write goes to \cc{items[-1]}, outside the array. Adding \cc{CAP} first keeps
+  the left operand non-negative.
+\item $[1]$, $[1,2]$, $[3,1,2]$; \cc{pop\_back()} returns 2: $[3,1]$; $[3,1,4]$;
+  $[5,3,1,4]$; \cc{pop\_front()} returns 5. Final contents: \cc{3 1 4}.
+\item When the maximum leaves the window from the front, a queue cannot tell which of the
+  remaining items is now the largest without rescanning them. A deque lets the algorithm
+  also discard from the \emph{back} the items that can never be a maximum, so the front is
+  always the answer. Maxima: $9,8,8,7,7$. Each index is pushed at the back exactly once
+  and popped (from the front or the back) at most once: at most $n+n=2n$ deque
+  operations. (Section~\ref{sec:monodeque}, Tracing~\ref{trace:23}.)
+\item (a)~$i=2<n/2=5$: the 2 items before position 2 move left: \textbf{2} moves.
+  (b)~$i=7\ge5$: the $n-i=3$ items from position 7 on move right: \textbf{3} moves.
+  (c)~$i=5$ is not $<5$: the $n-1-i=4$ items after position 5 move left: \textbf{4}
+  moves. The worst case is near the middle, about $n/2$ moves, because the shorter side
+  is never longer than half the deque; an array list always moves the whole right side,
+  up to $n$. (Tracing~\ref{trace:22}.)
+\item Four in both cases: \cc{n->prev}, \cc{n->next}, \cc{a->next}, \cc{b->prev}, where
+  \cc{a} is the sentinel and \cc{b} is the old first node --- or, for an empty deque, the
+  sentinel again. There is no special case. After \cc{linkedDeque e = d;} the struct
+  \cc{e} contains a second sentinel at a different address; its \cc{next}/\cc{prev}
+  point into \cc{d}'s nodes, but those nodes point back to \cc{d}'s sentinel, so a walk
+  in \cc{e} never returns to \cc{e}'s sentinel, and an operation on \cc{e} corrupts
+  \cc{d}. (Tracing~\ref{trace:25}.)
+\item Removal order $3,6,2,7,5,1$; the survivor is \textbf{4}. Recurrence with $k=3$:
+  $J(1)=0$, $J(2)=1$, $J(3)=1$, $J(4)=0$, $J(5)=3$, $J(6)=0$, $J(7)=3$; the survivor's
+  number is $J(7)+1=4$. (Problem~\ref{prob:45}, Tracing~\ref{trace:18}.)
+\item (a)~Stack: undo the most recent action first. (b)~Queue: print in order of arrival.
+  (c)~Deque: \emph{back} pops the most recent page (stack end), the limit discards the
+  oldest page (queue end). (d)~Stack: a closing tag must match the most recently opened
+  tag. (e)~Deque: the monotonic deque of Section~\ref{sec:monodeque}. (f)~Queue.
+\end{questions}

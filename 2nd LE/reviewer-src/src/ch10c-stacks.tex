@@ -1,0 +1,206 @@
+\section{Stacks}\label{sec:probstacks}
+
+In this section the stack of Listing~\ref{lst:stack} holds \cc{int}s; characters are
+pushed as their codes. ``Stack operations only'' means \cc{stInit}, \cc{stPush},
+\cc{stPop}, \cc{stTop}, \cc{stEmpty}, \cc{stSize}: no access to \cc{items[]}.
+
+\problem{32}{Valid brackets}{Easy}
+Given a string \cc{s} containing only the characters \cc{( ) [ ] \{ \}}, return 1 if
+every bracket is closed by the same kind of bracket and in the correct order, else 0.
+\begin{lstlisting}[style=starter]
+int isBalanced(char s[]);
+\end{lstlisting}
+\permitted Stack operations only.
+\constraints $0\le|s|\le10^4$.
+\required $O(n)$ time.
+\begin{tests}
+\{[()]\} & 1\\
+([)] & 0\\
+(( & 0\\
+)) & 0\\
+(empty string) & 1\\
+()[]\{\} & 1\\
+\end{tests}
+
+\problem{33}{Infix to postfix and postfix evaluation}{Medium}
+(a)~Given an infix expression \cc{in} made of single-digit operands, the operators
+\cc{+ - * /} and parentheses (no spaces), write its postfix form into \cc{out}. The
+operators \cc{*} and \cc{/} have higher precedence than \cc{+} and \cc{-}; operators of
+equal precedence are left-associative.
+(b)~Given a valid postfix expression \cc{p} of single digits and \cc{+ - * /}, return its
+value (integer division, truncating toward zero).
+\begin{lstlisting}[style=starter]
+void toPostfix(char in[], char out[]);
+int evalPostfix(char p[]);
+\end{lstlisting}
+\permitted Stack operations only.
+\constraints $1\le|\mathit{in}|\le100$; the input is valid.
+\required $O(n)$ time for both.
+\bonus Explain what changes if \cc{\^} (exponent, right-associative) is added.
+\begin{tests}
+2+3*4 & 234*+ ; value 14\\
+(2+3)*4 & 23+4* ; value 20\\
+2*(3+4)-5 & 234+*5- ; value 9\\
+8-3-2 & 83-2- ; value 3\\
+9-8/(4-2) & 9842-/- ; value 5\\
+\end{tests}
+
+\problem{34}{A stack with constant-time minimum}{Easy}
+Design a stack that supports \cc{push}, \cc{pop} and \cc{min} (the smallest item
+currently on the stack), each in $O(1)$ time.
+\begin{lstlisting}[style=starter]
+typedef struct { stack all; stack mins; } minStack;
+void msInit(minStack *m);
+void msPush(minStack *m, int x);
+int msPop(minStack *m, int *x);    // 0 if empty
+int msMin(minStack *m, int *x);    // 0 if empty
+\end{lstlisting}
+\permitted Stack operations on the two member stacks.
+\required Every operation $O(1)$.
+\bonus Use less memory when many pushes are not new minima (push to \cc{mins} only when
+$x\le$ the current minimum), and explain why the test must be $\le$, not $<$.
+\begin{tests}
+push 5 3 7 3 1; min & 1\\
+pop; pop; min & 3 (stack 5 3 7)\\
+push 2; min; pop; min & 2; 3\\
+min on an empty stack & fails (0)\\
+\end{tests}
+
+\problem{35}{Next greater element}{Medium}
+For every item \cc{a[i]} of an array, find the first item to its right that is
+\emph{strictly} greater, or $-1$ if there is none.
+\begin{lstlisting}[style=starter]
+void nextGreater(int a[], int n, int out[]);
+\end{lstlisting}
+\permitted Array access to \cc{a} and \cc{out}; one stack.
+\constraints $0\le n\le10^5$.
+\required $O(n)$ time ($O(n^2)$ earns partial credit).
+\bonus The \emph{circular} version: the search may wrap around to the beginning of the
+array (\cc{[1,2,1]} $\to$ \cc{[2,-1,2]}).
+\begin{tests}
+{}[2,1,5,3] & [5,5,-1,-1]\\
+{}[2,7,3,5,4,6,8] & [7,8,5,6,6,8,-1]\\
+{}[5,4,3] & [-1,-1,-1]\\
+{}[1,1] & [-1,-1]\\
+\end{tests}
+
+\problem{36}{Daily temperatures}{Medium}
+Given the daily temperatures \cc{t[0..n-1]}, compute \cc{wait[i]}, the number of days
+after day $i$ until a \emph{strictly} warmer day, or 0 if no warmer day follows.
+\begin{lstlisting}[style=starter]
+void dailyTemperatures(int t[], int n, int wait[]);
+\end{lstlisting}
+\permitted Array access to \cc{t} and \cc{wait}; one stack.
+\constraints $1\le n\le10^5$; $30\le t[i]\le100$.
+\required $O(n)$ time.
+\begin{tests}
+{}[73,74,75,71,69,72,76,73] & [1,1,4,2,1,1,0,0]\\
+{}[30,40,50,60] & [1,1,1,0]\\
+{}[30,60,90] & [1,1,0]\\
+{}[50,50] & [0,0]\\
+\end{tests}
+
+\problem{37}{Online stock span}{Medium}
+Prices of a stock arrive one per day. The \emph{span} of today's price is the number of
+consecutive days, ending today and going backwards, on which the price was $\le$ today's
+price. Implement \cc{ssNext}, which receives today's price and returns its span. The
+prices are given one at a time: you cannot look at future prices, and you should not
+store the whole history.
+\begin{lstlisting}[style=starter]
+typedef struct { stack prices; stack spans; } stockSpanner;
+void ssInit(stockSpanner *s);
+int ssNext(stockSpanner *s, int price);
+\end{lstlisting}
+\permitted Stack operations on the two member stacks.
+\required $O(1)$ amortised per call.
+\begin{tests}
+100 80 60 70 60 75 85 & 1 1 1 2 1 4 6\\
+10 10 10 & 1 2 3\\
+5 4 3 2 1 & 1 1 1 1 1\\
+\end{tests}
+
+\problem{38}{Asteroid collision}{Medium}
+Each item of \cc{a} is an asteroid in a row: its absolute value is its size, its sign its
+direction ($>0$ moves right, $<0$ moves left); all move at the same speed. When two
+meet, the smaller one explodes; if both are the same size, both explode. Two asteroids
+moving in the same direction never meet. Write the survivors, left to right, into
+\cc{out} and return how many there are.
+\begin{lstlisting}[style=starter]
+int asteroidCollision(int a[], int n, int out[]);
+\end{lstlisting}
+\permitted Array access to \cc{a} and \cc{out}; one stack.
+\constraints $0\le n\le10^4$; $a[i]\ne0$.
+\required $O(n)$ time.
+\begin{tests}
+{}[5,10,-5] & [5,10]\\
+{}[8,-8] & []\\
+{}[10,2,-5] & [10]\\
+{}[-2,-1,1,2] & [-2,-1,1,2]\\
+\end{tests}
+
+\problem{39}{Decode string}{Medium}
+A string is encoded by the rule \cc{k[part]}: the part inside the brackets is repeated
+exactly $k$ times ($k\ge1$, possibly several digits). Encodings may be nested. Write the
+decoded string into \cc{out}.
+\begin{lstlisting}[style=starter]
+void decodeString(char s[], char out[]);
+\end{lstlisting}
+\permitted Character access to \cc{s} and \cc{out}; stacks.
+\constraints The input is valid; the decoded string has at most $10^4$ characters.
+\required Time proportional to the length of the output.
+\begin{tests}
+3[a]2[bc] & aaabcbc\\
+3[a2[c]] & accaccacc\\
+2[abc]3[cd]ef & abcabccdcdcdef\\
+10[a] & aaaaaaaaaa\\
+abc & abc\\
+\end{tests}
+
+\problem{40}{Remove adjacent duplicates}{Easy}
+Repeatedly remove two adjacent equal letters from \cc{s} until no two adjacent letters
+are equal; write the result into \cc{out}. The result is unique.
+\begin{lstlisting}[style=starter]
+void removeAdjacent(char s[], char out[]);
+\end{lstlisting}
+\permitted Character access; one stack.
+\constraints $1\le|s|\le10^5$.
+\required $O(n)$ time. (Rescanning the string after each removal is $O(n^2)$.)
+\begin{tests}
+abbaca & ca\\
+azxxzy & ay\\
+aa & (empty string)\\
+abc & abc\\
+\end{tests}
+
+\problem{41}{Sort a stack}{Medium}
+Sort the stack \cc{s} so that the smallest item is on top. You may use one additional
+stack and scalar variables, nothing else.
+\begin{lstlisting}[style=starter]
+void sortStack(stack *s);
+\end{lstlisting}
+\permitted Stack operations only; one extra stack.
+\constraints $0\le n\le100$.
+\required $O(n^2)$ time.
+\begin{tests}
+bottom..top 3 1 4 1 5 & popping gives 1 1 3 4 5\\
+bottom..top 1 2 3 & popping gives 1 2 3\\
+empty & empty\\
+\end{tests}
+
+\problem{42}{Validate stack sequences}{Medium}
+The distinct numbers \cc{pushed[0..n-1]} are pushed onto an initially empty stack in this
+order, and pops may occur at any moment. Return 1 if the pops can produce exactly the
+order \cc{popped[0..n-1]}, else 0.
+\begin{lstlisting}[style=starter]
+int validateStackSequences(int pushed[], int popped[], int n);
+\end{lstlisting}
+\permitted Array reads; one stack.
+\constraints $0\le n\le1000$.
+\required $O(n)$ time.
+\bonus Prove that the greedy rule ``pop whenever the top is the next wanted item'' never
+misses a solution.
+\begin{tests}
+pushed 1 2 3 4 5, popped 4 5 3 2 1 & 1\\
+pushed 1 2 3 4 5, popped 4 3 5 1 2 & 0\\
+pushed 2 1 0, popped 1 2 0 & 1\\
+\end{tests}

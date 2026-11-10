@@ -1,0 +1,200 @@
+\chapter{Foundations}\label{ch:foundations}
+
+\section{Abstract data types}
+
+\begin{definition}[Abstract data type]
+An \emph{abstract data type} (ADT) is a mathematical model consisting of a set of values
+together with a set of operations that access or manipulate those values. The ADT
+specifies \emph{what} the operations do, never \emph{how} they are carried out.
+\end{definition}
+
+An ADT is therefore a contract. The \emph{interface} lists the operations and their
+meaning; an \emph{implementation} chooses a concrete representation and supplies the
+algorithms. One interface may have many implementations with different costs, and the
+costs --- not the results --- are what distinguish them. The slides put it as
+\emph{abstract: the implementation is hidden}.
+
+\begin{example}
+The \emph{List} ADT is a sequence $x_0,x_1,\dots,x_{n-1}$ with the operations
+\cc{size()}, \cc{get(i)}, \cc{set(i,x)}, \cc{add(i,x)} (insert $x$ at position $i$,
+displacing $x_i,\dots,x_{n-1}$ by $+1$) and \cc{remove(i)} (delete $x_i$, displacing
+$x_{i+1},\dots,x_{n-1}$ by $-1$). The slides name the same operations \cc{insert},
+\cc{push\_front}, \cc{push\_back}, \cc{erase}, \cc{pop\_front}, \cc{pop\_back},
+\cc{front}, \cc{back}. Two families of implementations are studied: the \emph{array
+list}, which stores $x_i$ in \cc{a[i]}, and the \emph{linked list}, which stores the
+items in nodes joined by pointers.
+\end{example}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}lll@{}}\toprule
+ADT & Operations (course names) & Discipline\\\midrule
+Stack & \cc{push(x)}, \cc{pop()}, \cc{top()} & last in, first out (LIFO)\\
+Queue & \cc{enqueue(x)}, \cc{dequeue()}, \cc{front()} & first in, first out (FIFO)\\
+Deque & \cc{push\_front}, \cc{push\_back}, \cc{pop\_front}, \cc{pop\_back} & both ends\\
+List  & \cc{size}, \cc{get(i)}, \cc{set(i,x)}, \cc{add(i,x)}, \cc{remove(i)} & indexed sequence\\\bottomrule
+\end{tabular}
+\caption{The sequence ADTs of this coverage. A stack is a deque restricted to one end; a
+FIFO queue is a deque restricted to \cc{push\_back} and \cc{pop\_front}; a deque is a list
+restricted to positions $0$ and $n-1$. Each restriction makes the interface smaller and
+the implementation easier to make fast.}
+\end{table}
+
+\begin{note}{The rule of abstraction}
+When a problem lists the permitted operations, those and only those may be applied to
+the structure. A client of a stack writes push, pop, top, empty; it never touches the
+array inside. New operations are allowed \emph{if you implement them} from the permitted
+ones (or, when a problem explicitly says so, from the representation).
+\end{note}
+
+\section{Asymptotic analysis}
+
+\begin{definition}[Big-Oh, Big-Omega, Big-Theta]
+Let $f,g:\mathbb N\to\mathbb R_{\ge 0}$. Then $f(n)=O(g(n))$ if there are constants
+$c>0$ and $n_0$ such that $f(n)\le c\,g(n)$ for all $n\ge n_0$; $f(n)=\Omega(g(n))$ if
+$f(n)\ge c\,g(n)$ for all $n\ge n_0$ (some $c>0$); $f(n)=\Theta(g(n))$ if both hold.
+\end{definition}
+
+\begin{example}[The thought exercise of the slides]\leavevmode
+\begin{enumerate}[(i)]
+\item $23=O(\log n)$ \emph{is true}. For $n\ge2$ we have $\lg n\ge1$, so
+  $23\le23\lg n$; take $c=23$, $n_0=2$. (Constants are $O(1)\subseteq O(\log n)$: $O$
+  is an \emph{upper} bound only.)
+\item $5\log n=O(1)$ \emph{is false}. Suppose $5\lg n\le c$ for all $n\ge n_0$.
+  Choosing $n>\max(n_0,2^{c/5})$ gives $5\lg n>c$, a contradiction.
+\item $5n-7=O(n)$ \emph{is true}. For $n\ge2$, $5n-7\le5n$; take $c=5$, $n_0=2$
+  ($n_0=2$ is needed only to keep the left side non-negative).
+\end{enumerate}
+\end{example}
+
+\para{Calculating running time} The running time of a program is estimated by counting
+how often its dominant statement executes.
+\begin{itemize}
+\item A loop that runs $n$ times around a constant-time body costs $\Theta(n)$; two
+  nested such loops cost $\Theta(n^2)$.
+\item \emph{Triangular} loops \cc{for(i<n) for(j<=i)} execute the body
+  $1+2+\dots+n=n(n+1)/2=\Theta(n^2)$ times.
+\item A loop whose index is \emph{multiplied or divided} by a constant each round
+  (\cc{i*=2}, \cc{i/=2}) runs $\Theta(\log n)$ times.
+\item Sequential blocks add; the larger term wins: $n^2+n\log n=\Theta(n^2)$.
+\item A recursive procedure that does $\Theta(1)$ work per call and makes one call on
+  $n-1$ items costs $\Theta(n)$.
+\item \emph{Amortised} counting: if each item is pushed onto and popped from a stack at
+  most once, a loop of $n$ rounds with an inner \cc{while(pop)} costs $\Theta(n)$ in
+  total, although one round may pop many items (Chapters~\ref{ch:stacks}
+  and~\ref{ch:deques}).
+\end{itemize}
+
+\begin{table}[ht]\centering\small
+\begin{tabular}{@{}lcl@{}}\toprule
+Class & Name & Typical source\\\midrule
+$\Theta(1)$ & constant & \cc{a[i]}, push on a stack, pointer update\\
+$\Theta(\log n)$ & logarithmic & binary search\\
+$\Theta(n)$ & linear & traversal, search in an unsorted list\\
+$\Theta(n\log n)$ & linearithmic & merge sort, sorting before binary search\\
+$\Theta(n^2)$ & quadratic & nested loops, insertion at the front $n$ times\\\bottomrule
+\end{tabular}
+\caption{The growth classes met in this course, in increasing order.}
+\end{table}
+
+\begin{remark}[Worst, best, amortised]
+\emph{Worst case} bounds the cost of a single operation over all inputs of size $n$.
+\emph{Amortised} cost bounds the average over a \emph{sequence} of operations, even when
+an individual operation is expensive (Theorems~\ref{thm:amortised}
+and~\ref{thm:twostack}). Neither is the ``average over random inputs''.
+\end{remark}
+
+\section{Pointers, memory and parameter passing}
+
+Every local variable lives on the \emph{call stack}; objects obtained with \cc{malloc}
+(C) or \cc{new} (C++) live on the \emph{heap} until released with \cc{free} or
+\cc{delete}. A pointer is a variable holding an address; \cc{p->f} abbreviates
+\cc{(*p).f}; and \cc{NULL} is the address that refers to nothing.
+
+\begin{description}[leftmargin=1.5em]
+\item[Memory leak.] A heap block that is no longer reachable but was never freed. Every
+  \cc{malloc}/\cc{new} on the path of a removal must be matched by a \cc{free}/\cc{delete}
+  of the removed node.
+\item[Dangling pointer.] A pointer to a block that has been freed. After \cc{free(cur)},
+  reading \cc{cur->next} is undefined behaviour --- \emph{save the successor first}.
+\item[Mixing.] Memory from \cc{malloc} must be released with \cc{free}, memory from
+  \cc{new} with \cc{delete}; never cross them.
+\end{description}
+
+\para{Pass by value, by pointer, by reference} A C function always receives
+\emph{copies} of its arguments. Hence:
+\begin{enumerate}[(i)]
+\item A \cc{struct} passed \emph{by value} is copied \emph{member by member}. If the
+  struct contains an \emph{array} (the course's array list \cc{int items[MAX]}, the
+  course's stack and queue), the whole array is copied, and changes made in the callee
+  are lost. If it contains a \emph{pointer} (a linked list's \cc{head}), only the pointer
+  is copied: callee and caller share the \emph{same nodes}. Modifying the shared nodes is
+  visible to the caller; reassigning the copied \cc{head} or \cc{size} is not
+  (Tracing~\ref{trace:2}).
+\item A raw array parameter \cc{int a[]} is really a pointer to the first element, so the
+  callee modifies the caller's array.
+\item To change a variable of the caller, pass its address: \cc{void f(list *l)}, called
+  as \cc{f(\&l)}. To change a \emph{pointer} variable --- for example the \cc{head} of a
+  list --- pass the address of the pointer, a \emph{pointer to a pointer}
+  \cc{node **h}, called as \cc{f(\&l.head)} (Section~\ref{sec:llpatterns};
+  Tracing~\ref{trace:7}).
+\end{enumerate}
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}
+\node[draw,minimum width=14mm,minimum height=6mm,font=\ttfamily\small] (h) at (0,0) {head};
+\llnode{a}{2.2,0}{5}\llnode{b}{3.8,0}{9}
+\draw[ptr] (h.east) -- (a.west);
+\draw[ptr] (ap.center) -- (b.west);
+\draw[ptr] (bp.center) -- ++(0.9,0) node[right] {\small$\times$};
+\node[draw,minimum width=14mm,minimum height=6mm,font=\ttfamily\small] (hh) at (0,-1.4) {\&head};
+\draw[ptr,dashed] (hh.north) -- (h.south);
+\node[right,font=\scriptsize,align=left] at (0.9,-1.4) {a \texttt{node **} holds the \emph{address of the pointer} \texttt{head},\\ so a callee can overwrite \texttt{head} itself.};
+\end{tikzpicture}
+\caption{A pointer to a pointer.}
+\end{figure}
+
+\begin{note}{Evaluation order}
+In C and C++ the order in which function \emph{arguments} (and the operands of \cc{+}) are
+evaluated is \emph{unspecified}. The statement
+\cc{printf("\%d \%d", pop(\&s), pop(\&s));} may print the two pops in either order. A
+tracing question that is well posed never relies on it; write each call as its own
+statement.
+\end{note}
+
+\section{Reasoning about correctness}
+
+\begin{definition}[Invariant]
+A \emph{loop invariant} is a statement that is true before the loop, is preserved by each
+iteration, and, together with the exit condition, implies the result. A \emph{class
+invariant} is a statement about a data structure that every operation assumes on entry
+and re-establishes on exit.
+\end{definition}
+
+\begin{example}[Invariant of the array list]\label{ex:alinv}
+\textbf{(I)} $0\le\cc{size}\le\cc{MAX}$, and the list is exactly
+\cc{items[0..size-1]}. Cells with index $\ge\cc{size}$ are \emph{not part of the list}:
+their content is irrelevant, which is why \cc{removeLast} only decrements \cc{size} (the
+slides' question ``should we worry about having two items equal to 10?'' has the
+answer \emph{no}).
+\end{example}
+
+\begin{example}[Invariant of the singly linked list with tail]
+\textbf{(I)} \cc{size} equals the number of nodes reachable from \cc{head};
+\cc{head==NULL} iff \cc{tail==NULL} iff \cc{size==0}; if non-empty, \cc{tail} is the
+node whose \cc{next} is \cc{NULL}.
+\end{example}
+
+\begin{example}[Invariant of the circular queue and deque]
+\textbf{(I)} $0\le n\le\cc{CAP}$, $0\le\cc{front}<\cc{CAP}$, and item $i$ of the
+sequence is \cc{a[(front+i) \% CAP]} for $0\le i<n$. Every operation of
+Chapters~\ref{ch:queues} and~\ref{ch:deques} must leave \cc{front} inside
+$[0,\cc{CAP})$ --- the reason for the \cc{+ CAP} in \cc{(front - 1 + CAP) \% CAP}.
+\end{example}
+
+\para{The edge-case checklist} Before submitting any list, stack, queue or deque routine,
+run it by hand on: (a)~the empty structure; (b)~one element; (c)~two elements; (d)~the
+operation applied at the first position; (e)~at the last position; (f)~in the middle;
+(g)~every element equal to the key; (h)~no element equal to the key; (i)~a full
+fixed-capacity structure; (j)~an index that has to wrap around. Most lost marks in this
+course come from (a), (b), (d), (e) and (j): forgetting to update \cc{head}, \cc{tail},
+\cc{size} or \cc{front}.

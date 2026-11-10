@@ -1,0 +1,9 @@
+pushBack 5  size=1 head=5 tail=5  [5]
+pushFront 3 size=2 head=3 tail=5  [3 5]
+pushBack 8  size=3 head=3 tail=8  [3 5 8]
+popBack     size=2 head=3 tail=5  [3 5]
+popBack     size=1 head=3 tail=3  [3]
+popFront    size=0 head=NULL tail=NULL  []
+0 3
+pushFront 1 size=1 head=1 tail=1  [1]
+pushBack 2  size=2 head=1 tail=2  [1 2]

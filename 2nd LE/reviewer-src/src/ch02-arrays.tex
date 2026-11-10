@@ -1,0 +1,214 @@
+\chapter{Array-Based Lists}\label{ch:arrays}
+
+\section{Arrays and their shortcomings}
+
+An array stores $m$ items of one type in $m$ consecutive memory cells, so the address of
+cell $i$ is computed in one step: \cc{a[i]} costs $\Theta(1)$. The \emph{primitive}
+C/C++ array has well-known shortcomings, which motivate every container in this chapter
+(lecture slides, \emph{why the primitive array is problematic}):
+\begin{itemize}
+\item its size is not stored --- a function receiving \cc{int a[]} cannot ask how long it is;
+\item bounds (subscripts) are not checked: \cc{a[m]} silently reads or corrupts a
+  neighbouring cell;
+\item a dynamically sized array needs manual heap allocation;
+\item inserting or deleting in the middle requires manual shifting;
+\item an array parameter is passed by address, so the callee changes the caller's array.
+\end{itemize}
+The remedy is to \emph{wrap} the array together with its bookkeeping, so that the pair
+behaves as a list. The slides do this twice: the \emph{array container} keeps only the
+array; the \emph{array list} keeps the array \emph{and the size}.
+
+\section{The array list}
+
+\begin{definition}[Array list]
+An \emph{array list} keeps a fixed-capacity array \cc{items[MAX]} and an integer
+\cc{size}. The list is \cc{items[0..size-1]}; invariant~(I) of
+Example~\ref{ex:alinv} holds.
+\end{definition}
+
+The sample program \cc{arraylist.c} defines the structure and the operations of
+Table~\ref{tab:alops}; Listing~\ref{lst:arraylist} is its completed form. The slides
+show the same list as a C++ class \cc{ArrayList} with \cc{push\_back}, \cc{insert(pos,x)}
+and \cc{erase(pos)}, both 0-based (Tracing~\ref{trace:4}).
+
+\begin{table}[ht]\centering\small
+\setlength{\tabcolsep}{4pt}\begin{tabular}{@{}llll@{}}\toprule
+Operation & Effect & Positions & Cost\\\midrule
+\cc{init(l)} & \cc{size=0} & --- & $\Theta(1)$\\
+\cc{append(l,x)} / \cc{push\_back} & store at \cc{items[size]} & --- & $\Theta(1)$\\
+\cc{insertFront(l,x)} & shift all right, store at \cc{items[0]} & --- & $\Theta(n)$\\
+\cc{insert(pos,x)} & shift \cc{items[pos..size-1]} right & 0-based (slides) & $\Theta(n-\mathrm{pos})$\\
+\cc{removeLast(l)} & \cc{size--} & --- & $\Theta(1)$\\
+\cc{removeFirst(l)} & shift all left, \cc{size--} & --- & $\Theta(n)$\\
+\cc{erase(pos)} & shift \cc{items[pos+1..]} left & 0-based (slides) & $\Theta(n-\mathrm{pos})$\\
+\cc{itemAt(l,p)} / \cc{setItem(l,x,p)} & read / write & \textbf{1-based} (\cc{arraylist.c}) & $\Theta(1)$\\
+\cc{isFull(l)} & \cc{size==MAX} & --- & $\Theta(1)$\\\bottomrule
+\end{tabular}
+\caption{Operations of the array list. Check the statement for the position convention.}
+\label{tab:alops}
+\end{table}
+
+\listingfile[label=lst:arraylist]{listings/arraylist.c}{The array list of the sample program \cc{arraylist.c}, completed.}
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}[x=7.5mm]
+\node[left,font=\small] at (-0.6,0) {before:};
+\foreach \v [count=\i from 0] in {16,4,8,15,{}} \node[cell] (b\i) at (\i,0) {\v};
+\foreach \i in {0,...,4} \node[idx,above=0pt of b\i] {\i};
+\node[left,font=\small] at (-0.6,-1.4) {after:};
+\foreach \v [count=\i from 0] in {23,16,4,8,15} \node[cell] (a\i) at (\i,-1.4) {\v};
+\node[cell,sh] at (0,-1.4) {23};
+\foreach \i [evaluate=\i as \j using int(\i+1)] in {0,...,3} \draw[ptr] (b\i.south) to[out=-60,in=120] (a\j.north);
+\node[right,font=\scriptsize,align=left] at (5.2,-0.7) {\texttt{insertFront(l,23)}:\\ every item moves one cell right,\\ \emph{last one first}; $n$ moves.};
+\end{tikzpicture}
+\caption{Insertion at the front shifts the whole list.}
+\end{figure}
+
+\begin{theorem}[Cost of positional insertion and deletion]\label{thm:shift}
+Inserting at (0-based) position $p$ into an array list of size $n$ performs exactly $n-p$
+element moves; deleting the item at position $p$ performs exactly $n-1-p$ moves. Hence
+both are $\Theta(n)$ in the worst case ($p=0$) and $\Theta(1)$ at the rear ($p=n$ or
+$p=n-1$).
+\end{theorem}
+\begin{proof}
+Insertion moves \cc{items[p..n-1]}, which are $n-p$ cells, each once. Deletion moves
+\cc{items[p+1..n-1]}, which are $n-1-p$ cells.
+\end{proof}
+
+\begin{note}{Direction of the shift}
+Shift to the \emph{right} (insertion) from the \emph{end} towards the position; shift to
+the \emph{left} (deletion) from the position towards the end. Doing it the other way
+overwrites items before they are copied and turns the whole tail into copies of one value
+--- a classical tracing question. The slides show the intermediate states
+\cc{1 3 3 4 \dots}, \cc{1 3 4 4 \dots}: during the shift one value is always duplicated,
+and the duplicate at the end (``two items equal to 10'') is harmless because it lies
+beyond \cc{size}.
+\end{note}
+
+\section{Dynamic arrays and the vector}\label{sec:vector}
+
+A fixed \cc{MAX} fails when the list outgrows it. A \emph{dynamic array} (the
+\emph{ArrayStack} of the notes, the \cc{std::vector} of C++) keeps a backing array of
+length $\cc{cap}\ge n$ and replaces it when necessary.
+\begin{itemize}
+\item \textbf{Grow.} If an insertion finds $n+1>\cc{cap}$, allocate a new array of length
+  $\max(1,2n)$, copy the $n$ items, release the old array.
+\item \textbf{Shrink.} After a removal, if $\cc{cap}\ge3n$, resize to $\max(1,2n)$ so
+  that memory is not wasted.
+\end{itemize}
+
+\listingfile[language=C++]{listings/intvector.cpp}{A growable array of integers (tested against an array model on random operations).}
+
+Twenty \cc{push\_back} calls followed by twenty \cc{pop\_back} calls print the pairs
+\emph{size/capacity}:
+\outputfile{vector_demo}
+The capacity doubles exactly when the array is full, and shrinks only when it is at
+least three times the size.
+
+\begin{theorem}[Amortised cost of \cc{push\_back}]\label{thm:amortised}
+Starting from an empty dynamic array that doubles when full, any sequence of $m$ calls to
+\cc{push\_back} costs $O(m)$ in total, i.e.\ $O(1)$ amortised per call.
+\end{theorem}
+\begin{proof}
+A call that does not resize costs 1. Resizes occur when the size is $1,2,4,\dots,2^k$
+with $2^k<m$, and the resize at size $2^j$ copies $2^j$ items. The total copying cost is
+$\sum_{j=0}^{k}2^j=2^{k+1}-1<2m$. Adding the $m$ unit costs gives a total below $3m$.
+\end{proof}
+
+\begin{remark}[Why shrink at $3n$ and not $2n$]
+If the array shrank as soon as $\cc{cap}\ge2n$, then right after a doubling
+($\cc{cap}=2n$) one removal would trigger a shrink and one insertion a grow: every
+operation would cost $\Theta(n)$. Waiting until $\cc{cap}\ge3n$ leaves a gap of
+$\Omega(n)$ operations between consecutive resizes, which restores $O(1)$ amortised
+cost. Growing by a constant ($\cc{cap}+10$) instead of doubling copies
+$10+20+30+\dots$ items, $\Theta(m^2)$ in total.
+\end{remark}
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}[x=7.5mm]
+\foreach \v [count=\i from 0] in {3,1,4,1} \node[cell] (o\i) at (\i,0) {\v};
+\node[left,font=\scriptsize,align=right] at (-0.6,0) {size 4,\\ cap.\ 4};
+\foreach \v [count=\i from 0] in {3,1,4,1,5,{},{},{}} \node[cell] (n\i) at (\i,-1.5) {\v};
+\node[cell,sh] at (4,-1.5) {5};
+\node[left,font=\scriptsize,align=right] at (-0.6,-1.5) {size 5,\\ cap.\ 8};
+\foreach \i in {0,...,3} \draw[ptr,dashed] (o\i.south) -- (n\i.north);
+\node[right,font=\scriptsize] at (4.6,0) {old array freed};
+\node[right,font=\scriptsize] at (4.6,-0.75) {copy: $\Theta(n)$};
+\node[right,font=\scriptsize] at (8.2,-1.5) {$\leftarrow$ \texttt{push\_back(5)}};
+\end{tikzpicture}
+\caption{\cc{push\_back} on a full vector: a new array of double capacity is allocated,
+the items are copied, the old array is freed, then 5 is stored. All pointers and
+iterators into the old array are invalid afterwards.}
+\end{figure}
+
+\section{Sorted array lists and binary search}\label{sec:bsearch}
+
+If the list is kept in non-decreasing order, searching need not be linear.
+
+\begin{definition}[Lower and upper bound]
+$\mathrm{lb}(x)$ is the smallest index $i$ with $\cc{items}[i]\ge x$, or $n$ if none;
+$\mathrm{ub}(x)$ is the smallest index $i$ with $\cc{items}[i]>x$, or $n$ if none.
+\end{definition}
+
+Then $x$ occurs in the list iff $\mathrm{lb}(x)<n$ and $\cc{items}[\mathrm{lb}(x)]=x$;
+the number of occurrences is $\mathrm{ub}(x)-\mathrm{lb}(x)$; and the sorted position for
+inserting $x$ \emph{after} equal items is $\mathrm{ub}(x)$.
+
+\listingfile{listings/lowerbound.c}{Lower bound by bisection.}
+
+\begin{theorem}[Correctness and cost of bisection]
+The invariant holds initially (the ranges are empty), is preserved by both branches, and
+when $\mathit{lo}=\mathit{hi}$ it says exactly that $\mathit{lo}=\mathrm{lb}(x)$. Each
+round halves $\mathit{hi}-\mathit{lo}$, so the loop runs at most $\lfloor\lg n\rfloor+1$
+times: search is $\Theta(\log n)$.
+\end{theorem}
+
+\begin{figure}[ht]\centering
+\begin{tikzpicture}[x=7.5mm,y=9mm]
+\foreach \row/\lo/\hi/\mid/\txt in {0/0/8/4/{$lo=0,\ hi=8,\ mid=4$: \ $a[4]=16<23$, so $lo=5$},
+  1/5/8/6/{$lo=5,\ hi=8,\ mid=6$: \ $a[6]=38\ge23$, so $hi=6$},
+  2/5/6/5/{$lo=5,\ hi=6,\ mid=5$: \ $a[5]=23\ge23$, so $hi=5$}} {
+  \foreach \v [count=\i from 0] in {2,5,8,12,16,23,38,56} {
+    \pgfmathtruncatemacro{\out}{(\i<\lo)||(\i>=\hi)}
+    \ifnum\out=1 \node[cell,sh] at (\i,-\row) {\v}; \else \node[cell] at (\i,-\row) {\v}; \fi }
+  \node[cell,shd] at (\mid,-\row) {\pgfmathparse{{2,5,8,12,16,23,38,56}[\mid]}\pgfmathresult};
+  \node[right,font=\scriptsize] at (8.1,-\row) {\txt};
+}
+\foreach \i in {0,...,7} \node[idx] at (\i,0.48) {\i};
+\node[font=\scriptsize] at (3.5,-2.9) {$lo=hi=5$: the lower bound of 23 is index 5};
+\end{tikzpicture}
+\caption{\cc{lowerBound(a, 8, 23)}. Shaded cells are already excluded; the dark cell is
+\cc{mid}. The range $[lo,hi)$ halves each round.}
+\end{figure}
+
+\begin{proposition}[Cost of the sorted array list]
+\cc{search}, \cc{count}, \cc{lowerBound}, \cc{upperBound}: $\Theta(\log n)$. \cc{insert}
+and \cc{erase}: $\Theta(\log n)$ to locate plus $\Theta(n)$ to shift, i.e.\ $\Theta(n)$
+overall. Sorting does not make \emph{insertion} cheaper; it makes \emph{searching}
+cheaper. Complete code appears in Problem~\ref{prob:4}.
+\end{proposition}
+
+\section{Index techniques for array problems}\label{sec:arraytech}
+
+Most array problems of the online-judge kind are solved by one of four patterns. Each
+replaces a quadratic double loop by a single pass.
+
+\para{Read index and write index} One index $r$ reads every item; a second index $w$ marks
+the end of the part already built. An item that must be kept is copied to \cc{a[w++]}.
+Because $w\le r$ at all times, nothing unread is overwritten. Used for removing
+duplicates, moving zeroes, in-place compression (Problems~\ref{prob:1},~\ref{prob:7},~\ref{prob:10}).
+
+\para{Two indices from the two ends} On a \emph{sorted} array, \cc{lo} starts at the left
+and \cc{hi} at the right; at each step one of them moves inward, and the sortedness proves
+that the discarded index cannot be part of an answer. Used for two-sum and for palindrome
+checks (Problem~\ref{prob:8}; on a doubly linked list, Problem~\ref{prob:20}).
+
+\para{The reversal trick} Reversing a block is a two-ends loop. Rotation by $k$ is three
+reversals, transpose followed by row reversal rotates a matrix
+(Problems~\ref{prob:5},~\ref{prob:12}).
+
+\para{Running summaries} One left-to-right pass keeps a summary of the prefix read so
+far: a running sum, the best sum of a subarray ending here (Kadane, Problem~\ref{prob:9}),
+or a vote counter (Boyer--Moore, Problem~\ref{prob:11}). Chapters~\ref{ch:stacks}
+and~\ref{ch:deques} extend this idea: the summary becomes a \emph{stack} or a
+\emph{deque} of candidate indices.

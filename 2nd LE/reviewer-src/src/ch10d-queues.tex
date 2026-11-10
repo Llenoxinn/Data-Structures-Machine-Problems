@@ -1,0 +1,123 @@
+\section{Queues}\label{sec:probqueues}
+
+``Queue operations only'' means \cc{qInit}, \cc{qEnq}, \cc{qDeq}, \cc{qFront},
+\cc{qEmpty}, \cc{qSize} of Listing~\ref{lst:queue}: no access to \cc{items[]} or
+\cc{front}.
+
+\problem{43}{A queue from two stacks}{Easy}
+Implement a FIFO queue using two stacks \cc{in} and \cc{out}: \cc{tsqPush} adds at the
+rear, \cc{tsqPop} removes from the front, \cc{tsqPeek} reads the front.
+\begin{lstlisting}[style=starter]
+typedef struct { stack in; stack out; } twoStackQueue;
+void tsqInit(twoStackQueue *q);
+void tsqPush(twoStackQueue *q, int x);
+int tsqPop(twoStackQueue *q, int *x);    // 0 if empty
+int tsqPeek(twoStackQueue *q, int *x);   // 0 if empty
+int tsqEmpty(twoStackQueue *q);
+\end{lstlisting}
+\permitted Stack operations only.
+\required Every operation $O(1)$ amortised.
+\bonus Prove the amortised bound (Theorem~\ref{thm:twostack}).
+\begin{tests}
+push 1, push 2, peek, pop, empty & 1, 1, 0\\
+then push 3, pop, pop, pop & 2, 3, fails\\
+\end{tests}
+
+\problem{44}{A stack from a queue}{Easy}
+Implement a LIFO stack using \emph{one} queue.
+\begin{lstlisting}[style=starter]
+typedef struct { queue q; } queueStack;
+void qsInit(queueStack *s);
+void qsPush(queueStack *s, int x);
+int qsPop(queueStack *s, int *x);    // 0 if empty
+int qsTop(queueStack *s, int *x);    // 0 if empty
+int qsEmpty(queueStack *s);
+\end{lstlisting}
+\permitted Queue operations only.
+\required One of push and pop in $O(1)$, the other in $O(n)$.
+\begin{tests}
+push 1, push 2, top, pop, empty & 2, 2, 0\\
+then pop, empty & 1, 1\\
+push 1, push 2, push 3, pop, push 4, pop, pop & 3, 4, 2\\
+\end{tests}
+
+\problem{45}{The Josephus problem}{Medium}
+$n$ people stand in a circle, numbered $1..n$. Counting starts at person 1; every
+$k$-th person leaves the circle, and counting resumes with the next person. Return the
+number of the last person left.
+\begin{lstlisting}[style=starter]
+int josephus(int n, int k);
+\end{lstlisting}
+\permitted Queue operations only.
+\constraints $1\le n\le99$ (the queue has capacity 100), $1\le k\le1000$.
+\required $O(nk)$ time.
+\bonus $O(n)$ time and $O(1)$ space without a queue (\cc{josephusFast}), for any $n$.
+\begin{tests}
+n=7, k=3 & 4\\
+n=5, k=2 & 3\\
+n=6, k=3 & 1\\
+n=41, k=3 & 31\\
+n=1, k=5 & 1\\
+\end{tests}
+
+\problem{46}{Reverse the first $k$ items of a queue}{Easy}
+Reverse the order of the first $k$ items of the queue \cc{q}; the other items keep their
+order and stay behind them.
+\begin{lstlisting}[style=starter]
+void reverseFirstK(queue *q, int k);   // 0 <= k <= size
+\end{lstlisting}
+\permitted Queue operations on \cc{q}; one stack.
+\required $O(n)$ time.
+\begin{tests}
+{}[1,2,3,4,5], k=3 & [3,2,1,4,5]\\
+{}[1,2,3,4,5], k=5 & [5,4,3,2,1]\\
+{}[1,2,3,4,5], k=0 & [1,2,3,4,5]\\
+{}[10,20,\dots,100], k=5 & [50,40,30,20,10,60,70,80,90,100]\\
+\end{tests}
+
+\problem{47}{Number of recent calls}{Easy}
+A counter receives pings at times \cc{t} (in milliseconds), each strictly later than the
+previous one. \cc{rcPing(r, t)} records the ping and returns how many pings happened in
+the inclusive range $[t-3000,\,t]$.
+\begin{lstlisting}[style=starter]
+typedef struct { queue times; } recentCounter;
+void rcInit(recentCounter *r);
+int rcPing(recentCounter *r, int t);
+\end{lstlisting}
+\permitted Queue operations on \cc{times}.
+\constraints At most 100 pings fall inside any window.
+\required $O(1)$ amortised per ping.
+\begin{tests}
+ping 1, 100, 3001, 3002 & 1, 2, 3, 3\\
+ping 1, 5000, 5001 & 1, 1, 2\\
+\end{tests}
+
+\problem{48}{Interleave the two halves of a queue}{Medium}
+A queue of even length holds $x_1\dots x_m\,y_1\dots y_m$. Rearrange it into
+$x_1y_1x_2y_2\dots x_my_m$.
+\begin{lstlisting}[style=starter]
+void interleaveHalves(queue *q);
+\end{lstlisting}
+\permitted Queue operations on \cc{q}; one stack (no second queue, no array).
+\required $O(n)$ time.
+\begin{tests}
+{}[1,2,3,4,5,6,7,8] & [1,5,2,6,3,7,4,8]\\
+{}[11,12,\dots,20] & [11,16,12,17,13,18,14,19,15,20]\\
+{}[1,2] & [1,2]\\
+\end{tests}
+
+\problem{49}{First negative number in every window}{Medium}
+For every window \cc{a[i..i+k-1]} of $k$ consecutive items, write into \cc{out} the
+first negative number of the window, or 0 if it has none. Return the number of windows,
+$n-k+1$.
+\begin{lstlisting}[style=starter]
+int firstNegatives(int a[], int n, int k, int out[]);
+\end{lstlisting}
+\permitted Array access to \cc{a} and \cc{out}; one queue.
+\constraints $1\le k\le n\le10^5$.
+\required $O(n)$ time ($O(nk)$ earns partial credit).
+\begin{tests}
+{}[12,-1,-7,8,-15,30,16,28], k=3 & [-1,-1,-7,-15,-15,0]\\
+{}[-8,2,3,-6,10], k=2 & [-8,0,-6,-6]\\
+{}[1,2,3], k=3 & [0]\\
+\end{tests}
