@@ -3,18 +3,16 @@
 // The stack holds indices whose answer is still unknown; their values
 // decrease from bottom to top.
 void nextGreater(int a[], int n, int out[]) {
-    stack waiting;
-    stInit(&waiting);
+    stack<int> waiting;
 
     for (int i = 0; i < n; i++) out[i] = -1;
 
     for (int i = 0; i < n; i++) {
-        int j;
         // a[i] answers every waiting index whose value is smaller
-        while (stTop(&waiting, &j) && a[j] < a[i]) {
-            out[j] = a[i];
-            stPop(&waiting, &j);
+        while (!waiting.empty() && a[waiting.top()] < a[i]) {
+            out[waiting.top()] = a[i];
+            waiting.pop();
         }
-        stPush(&waiting, i);
+        waiting.push(i);
     }
 }

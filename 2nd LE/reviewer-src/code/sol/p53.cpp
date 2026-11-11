@@ -3,20 +3,18 @@
 // The deque holds indices of the current window whose values decrease from
 // front to back; the front is always the index of the window maximum.
 int maxSlidingWindow(int a[], int n, int k, int out[]) {
-    deque d;
-    int j, m = 0;
-    dqInit(&d);
+    deque<int> d;
+    int m = 0;
 
     for (int i = 0; i < n; i++) {
         // 1. the front leaves when it slides out of the window a[i-k+1..i]
-        if (dqFront(&d, &j) && j <= i - k) dqPopFront(&d, &j);
+        if (!d.empty() && d.front() <= i - k) d.pop_front();
         // 2. smaller values at the back can never be a maximum again
-        while (dqBack(&d, &j) && a[j] <= a[i]) dqPopBack(&d, &j);
-        dqPushBack(&d, i);
+        while (!d.empty() && a[d.back()] <= a[i]) d.pop_back();
+        d.push_back(i);
         // 3. once the first window is complete, its maximum is at the front
         if (i >= k - 1) {
-            dqFront(&d, &j);
-            out[m] = a[j];
+            out[m] = a[d.front()];
             m++;
         }
     }

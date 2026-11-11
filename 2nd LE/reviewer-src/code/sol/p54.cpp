@@ -4,22 +4,20 @@
 //   maxd: values decreasing (front = index of the maximum)
 //   mind: values increasing (front = index of the minimum)
 int longestSubarray(int a[], int n, int limit) {
-    deque maxd, mind;
-    int left = 0, best = 0, j, f, g;
-    dqInit(&maxd);
-    dqInit(&mind);
+    deque<int> maxd, mind;
+    int left = 0, best = 0;
 
     for (int right = 0; right < n; right++) {
-        while (dqBack(&maxd, &j) && a[j] <= a[right]) dqPopBack(&maxd, &j);
-        dqPushBack(&maxd, right);
-        while (dqBack(&mind, &j) && a[j] >= a[right]) dqPopBack(&mind, &j);
-        dqPushBack(&mind, right);
+        while (!maxd.empty() && a[maxd.back()] <= a[right]) maxd.pop_back();
+        maxd.push_back(right);
+        while (!mind.empty() && a[mind.back()] >= a[right]) mind.pop_back();
+        mind.push_back(right);
 
         // shrink from the left until the window is valid again
-        while (dqFront(&maxd, &f) && dqFront(&mind, &g) && a[f] - a[g] > limit) {
+        while (a[maxd.front()] - a[mind.front()] > limit) {
             left++;
-            if (f < left) dqPopFront(&maxd, &f);   // the front fell out
-            if (g < left) dqPopFront(&mind, &g);
+            if (maxd.front() < left) maxd.pop_front();   // the front fell out
+            if (mind.front() < left) mind.pop_front();
         }
         if (right - left + 1 > best) best = right - left + 1;
     }

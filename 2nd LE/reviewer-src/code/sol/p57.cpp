@@ -6,18 +6,15 @@
 // (best values decreasing) gives that window maximum in O(1).
 int maxResult(int a[], int n, int k) {
     int best[10000];
-    deque d;
-    int j;
-    dqInit(&d);
+    deque<int> d;
 
     best[0] = a[0];
-    dqPushBack(&d, 0);
+    d.push_back(0);
     for (int i = 1; i < n; i++) {
-        if (dqFront(&d, &j) && j < i - k) dqPopFront(&d, &j);   // too far back
-        dqFront(&d, &j);
-        best[i] = a[i] + best[j];
-        while (dqBack(&d, &j) && best[j] <= best[i]) dqPopBack(&d, &j);
-        dqPushBack(&d, i);
+        if (d.front() < i - k) d.pop_front();        // too far back
+        best[i] = a[i] + best[d.front()];
+        while (!d.empty() && best[d.back()] <= best[i]) d.pop_back();
+        d.push_back(i);
     }
     return best[n - 1];
 }

@@ -3,25 +3,24 @@
 // The answer is built directly in out; the stacks remember, for every open
 // bracket, its repeat count and where its part starts in out.
 void decodeString(char s[], char out[]) {
-    stack counts;
-    stack starts;
+    stack<int> counts;
+    stack<int> starts;
     int len = 0;                     // current length of out
     int k = 0;                       // number being read
-    stInit(&counts);
-    stInit(&starts);
 
     for (int i = 0; s[i] != '\0'; i++) {
         char c = s[i];
         if (c >= '0' && c <= '9') {
             k = k * 10 + (c - '0');
         } else if (c == '[') {
-            stPush(&counts, k);
-            stPush(&starts, len);
+            counts.push(k);
+            starts.push(len);
             k = 0;
         } else if (c == ']') {
-            int times, start;
-            stPop(&counts, &times);
-            stPop(&starts, &start);
+            int times = counts.top();
+            int start = starts.top();
+            counts.pop();
+            starts.pop();
             int partLen = len - start;           // out[start..len-1] is the part
             for (int t = 1; t < times; t++) {    // it is already there once
                 for (int j = 0; j < partLen; j++) {

@@ -1,20 +1,17 @@
 // n people stand in a circle, numbered 1..n. Starting at 1, every k-th
 // person is removed until one is left. Returns that person's number.
 int josephus(int n, int k) {
-    queue q;
-    int x;
-    qInit(&q);
-    for (int i = 1; i <= n; i++) qEnq(&q, i);
+    queue<int> q;
+    for (int i = 1; i <= n; i++) q.push(i);
 
-    while (qSize(&q) > 1) {
+    while (q.size() > 1) {
         for (int i = 1; i < k; i++) {    // the first k-1 are skipped:
-            qDeq(&q, &x);                // they go to the back
-            qEnq(&q, x);
+            q.push(q.front());           // they go to the back
+            q.pop();
         }
-        qDeq(&q, &x);                    // the k-th is removed
+        q.pop();                         // the k-th is removed
     }
-    qDeq(&q, &x);
-    return x;
+    return q.front();
 }
 
 // Bonus, O(n) time and O(1) space. With i people the survivor's 0-based

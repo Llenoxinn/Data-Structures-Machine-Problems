@@ -2,20 +2,20 @@
 // in the right order.
 // s contains only the characters ( ) [ ] { }.
 int isBalanced(char s[]) {
-    stack st;
-    stInit(&st);
+    stack<char> st;
 
     for (int i = 0; s[i] != '\0'; i++) {
         char c = s[i];
         if (c == '(' || c == '[' || c == '{') {
-            stPush(&st, c);                     // remember the opener
+            st.push(c);                     // remember the opener
         } else {
-            int open;
-            if (!stPop(&st, &open)) return 0;   // closer with nothing to close
+            if (st.empty()) return 0;       // closer with nothing to close
+            char open = st.top();
+            st.pop();
             if (c == ')' && open != '(') return 0;
             if (c == ']' && open != '[') return 0;
             if (c == '}' && open != '{') return 0;
         }
     }
-    return stEmpty(&st);                        // leftover openers: not balanced
+    return st.empty();                      // leftover openers: not balanced
 }
