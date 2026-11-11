@@ -1,65 +1,56 @@
-typedef struct {
+// A stack of ints in an array. It is used exactly like stack<int> from <stack>:
+//     Stack st;   st.push(5);   st.top();   st.pop();   st.empty();   st.size();
+class Stack {
+public:
     int items[100];
-    int size;            // the top is items[size - 1]
-} stack;
+    int count;                 // number of items; the top is items[count - 1]
 
-void stInit(stack *s) { s->size = 0; }
-int stEmpty(stack *s) { return s->size == 0; }
-int stSize(stack *s) { return s->size; }
+    Stack() { count = 0; }
 
-// Returns 1 on success, 0 if the stack is full.
-int stPush(stack *s, int x) {
-    if (s->size == 100) return 0;
-    s->items[s->size] = x;
-    s->size++;
-    return 1;
-}
+    bool empty() { return count == 0; }
+    int size() { return count; }
 
-// Removes the top into *x. Returns 1 on success, 0 if the stack is empty.
-int stPop(stack *s, int *x) {
-    if (s->size == 0) return 0;
-    s->size--;
-    *x = s->items[s->size];
-    return 1;
-}
+    void push(int x) {
+        if (count == 100) return;          // full: nothing happens
+        items[count] = x;
+        count++;
+    }
 
-// Copies the top into *x without removing it. Returns 0 if empty.
-int stTop(stack *s, int *x) {
-    if (s->size == 0) return 0;
-    *x = s->items[s->size - 1];
-    return 1;
-}
+    void pop() {                           // removes the top (returns nothing)
+        if (count == 0) return;            // empty: nothing happens
+        count--;
+    }
 
-typedef struct {
+    int top() {                            // the top item, NOT removed
+        return items[count - 1];           // check empty() first!
+    }
+};
+
+// A queue of ints in a circular array. Used exactly like queue<int> from <queue>:
+//     Queue q;   q.push(5);   q.front();   q.back();   q.pop();   q.empty();   q.size();
+class Queue {
+public:
     int items[100];
-    int front;           // index of the first item
-    int size;
-} queue;                 // circular: item i is at items[(front + i) % 100]
+    int first;                 // index of the front item
+    int count;                 // item i is at items[(first + i) % 100]
 
-void qInit(queue *q) { q->front = 0; q->size = 0; }
-int qEmpty(queue *q) { return q->size == 0; }
-int qSize(queue *q) { return q->size; }
+    Queue() { first = 0; count = 0; }
 
-// Returns 1 on success, 0 if the queue is full.
-int qEnq(queue *q, int x) {
-    if (q->size == 100) return 0;
-    q->items[(q->front + q->size) % 100] = x;
-    q->size++;
-    return 1;
-}
+    bool empty() { return count == 0; }
+    int size() { return count; }
 
-// Removes the front into *x. Returns 1 on success, 0 if the queue is empty.
-int qDeq(queue *q, int *x) {
-    if (q->size == 0) return 0;
-    *x = q->items[q->front];
-    q->front = (q->front + 1) % 100;
-    q->size--;
-    return 1;
-}
+    void push(int x) {                     // adds x at the back
+        if (count == 100) return;
+        items[(first + count) % 100] = x;
+        count++;
+    }
 
-// Copies the front into *x without removing it. Returns 0 if empty.
-int qFront(queue *q, int *x) {
-    if (q->size == 0) return 0;
-    *x = q->items[q->front];
-    return 1;
-}
+    void pop() {                           // removes the front (returns nothing)
+        if (count == 0) return;
+        first = (first + 1) % 100;
+        count--;
+    }
+
+    int front() { return items[first]; }                       // check empty() first!
+    int back() { return items[(first + count - 1) % 100]; }    // check empty() first!
+};

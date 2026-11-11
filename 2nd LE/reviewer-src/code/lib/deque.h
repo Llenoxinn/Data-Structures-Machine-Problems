@@ -1,56 +1,41 @@
-typedef struct {
+// A deque of ints in a circular array. Used exactly like deque<int> from <deque>:
+//     Deque d;   d.push_front(1);   d.push_back(2);   d.front();   d.back();
+//     d.pop_front();   d.pop_back();   d.empty();   d.size();
+class Deque {
+public:
     int items[100];
-    int front;           // index of the first item
-    int size;
-} deque;                 // circular: item i is at items[(front + i) % 100]
+    int first;                 // index of the front item
+    int count;                 // item i is at items[(first + i) % 100]
 
-void dqInit(deque *d) { d->front = 0; d->size = 0; }
-int dqEmpty(deque *d) { return d->size == 0; }
-int dqSize(deque *d) { return d->size; }
+    Deque() { first = 0; count = 0; }
 
-// Adds x before the first item. Returns 0 if the deque is full.
-int dqPushFront(deque *d, int x) {
-    if (d->size == 100) return 0;
-    d->front = (d->front - 1 + 100) % 100;   // one step back, wrapping to 99
-    d->items[d->front] = x;
-    d->size++;
-    return 1;
-}
+    bool empty() { return count == 0; }
+    int size() { return count; }
 
-// Adds x after the last item. Returns 0 if the deque is full.
-int dqPushBack(deque *d, int x) {
-    if (d->size == 100) return 0;
-    d->items[(d->front + d->size) % 100] = x;
-    d->size++;
-    return 1;
-}
+    void push_front(int x) {               // adds x before the first item
+        if (count == 100) return;
+        first = (first - 1 + 100) % 100;   // one step back, wrapping to 99
+        items[first] = x;
+        count++;
+    }
 
-// Removes the first item into *x. Returns 0 if the deque is empty.
-int dqPopFront(deque *d, int *x) {
-    if (d->size == 0) return 0;
-    *x = d->items[d->front];
-    d->front = (d->front + 1) % 100;
-    d->size--;
-    return 1;
-}
+    void push_back(int x) {                // adds x after the last item
+        if (count == 100) return;
+        items[(first + count) % 100] = x;
+        count++;
+    }
 
-// Removes the last item into *x. Returns 0 if the deque is empty.
-int dqPopBack(deque *d, int *x) {
-    if (d->size == 0) return 0;
-    *x = d->items[(d->front + d->size - 1) % 100];
-    d->size--;
-    return 1;
-}
+    void pop_front() {                     // removes the first item
+        if (count == 0) return;
+        first = (first + 1) % 100;
+        count--;
+    }
 
-// Copy the first / last item into *x without removing it. 0 if empty.
-int dqFront(deque *d, int *x) {
-    if (d->size == 0) return 0;
-    *x = d->items[d->front];
-    return 1;
-}
+    void pop_back() {                      // removes the last item
+        if (count == 0) return;
+        count--;
+    }
 
-int dqBack(deque *d, int *x) {
-    if (d->size == 0) return 0;
-    *x = d->items[(d->front + d->size - 1) % 100];
-    return 1;
-}
+    int front() { return items[first]; }                       // check empty() first!
+    int back() { return items[(first + count - 1) % 100]; }    // check empty() first!
+};

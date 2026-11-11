@@ -7,7 +7,7 @@
 cd "$(dirname "$0")"
 mkdir -p bin out
 CFLAGS="-std=c99 -Wall -Wextra -Wno-unused-parameter -Wno-unused-but-set-parameter -Wno-unused-function -O1"
-CXXFLAGS="-std=c++11 -Wall -Wextra -Wno-unused-parameter -O1"
+CXXFLAGS="-std=c++11 -Wall -Wextra -Wno-unused-parameter -Wno-write-strings -Wno-sign-compare -O1"
 fail=0
 
 libs_of() {   # prints -include flags for the files named on line 1 (paths from code/)

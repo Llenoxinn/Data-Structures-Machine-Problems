@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <queue>
+#include <deque>
 #include <stack>
 using namespace std;
 #endif
