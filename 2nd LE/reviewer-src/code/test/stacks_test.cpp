@@ -1,16 +1,16 @@
 #include "../lib/stackqueue.h"
 #include "../lib/testutil.h"
-#include "../sol/p32.c"
-#include "../sol/p33.c"
-#include "../sol/p34.c"
-#include "../sol/p35.c"
-#include "../sol/p36.c"
-#include "../sol/p37.c"
-#include "../sol/p38.c"
-#include "../sol/p39.c"
-#include "../sol/p40.c"
-#include "../sol/p41.c"
-#include "../sol/p42.c"
+#include "../sol/p32.cpp"
+#include "../sol/p33.cpp"
+#include "../sol/p34.cpp"
+#include "../sol/p35.cpp"
+#include "../sol/p36.cpp"
+#include "../sol/p37.cpp"
+#include "../sol/p38.cpp"
+#include "../sol/p39.cpp"
+#include "../sol/p40.cpp"
+#include "../sol/p41.cpp"
+#include "../sol/p42.cpp"
 
 /* brute-force balanced test: repeatedly delete "()", "[]", "{}" */
 int balancedSlow(const char *s) {
@@ -37,7 +37,19 @@ int genExpr(char *s, int depth) {   /* writes a random valid infix expression wi
 }
 
 int main(void) {
-    char out[2000]; int it, i, x;
+    char out[2000]; int it, i;
+    /* the library Stack and Queue against stack<int> / queue<int> */
+    for (it = 0; it < 300; it++) {
+        Stack s; stack<int> rs; Queue q; queue<int> rq;
+        for (int op = 0; op < 300; op++) {
+            int x = rnd(100);
+            if (rnd(2) && rs.size() < 100) { s.push(x); rs.push(x); q.push(x); rq.push(x); }
+            else if (!rs.empty()) { s.pop(); rs.pop(); q.pop(); rq.pop(); }
+            CHECK(s.size() == (int)rs.size() && s.empty() == rs.empty());
+            CHECK(q.size() == (int)rq.size() && q.empty() == rq.empty());
+            if (!rs.empty()) CHECK(s.top() == rs.top() && q.front() == rq.front() && q.back() == rq.back());
+        }
+    }
     /* P32 */
     CHECK(isBalanced("{[()]}") && !isBalanced("([)]") && !isBalanced("((") && !isBalanced("))"));
     CHECK(isBalanced("") && isBalanced("()[]{}"));
@@ -53,10 +65,10 @@ int main(void) {
     for (it = 0; it < 5000; it++) { char s[200]; genExpr(s, 3); toPostfix(s, out); gp = s;
         CHECK(evalPostfix(out) == expr()); }
     /* P34 */
-    { minStack m; msInit(&m); msPush(&m,5); msPush(&m,3); msPush(&m,7); msPush(&m,3); msPush(&m,1);
-      CHECK(msMin(&m,&x) && x==1); msPop(&m,&x); CHECK(msMin(&m,&x) && x==3);
-      msPop(&m,&x); msPop(&m,&x); CHECK(msMin(&m,&x) && x==3); msPop(&m,&x); CHECK(msMin(&m,&x) && x==5);
-      msPop(&m,&x); CHECK(!msMin(&m,&x) && !msPop(&m,&x)); }
+    { MinStack m; m.push(5); m.push(3); m.push(7); m.push(3); m.push(1);
+      CHECK(m.getMin()==1); m.pop(); CHECK(m.getMin()==3);
+      m.pop(); m.pop(); CHECK(m.getMin()==3 && m.top()==3); m.pop(); CHECK(m.getMin()==5);
+      m.pop(); CHECK(m.empty()); }
     /* P35, P36 against brute force */
     { int a[] = {2,1,5,3}, o[4]; nextGreater(a,4,o); CHECK(o[0]==5 && o[1]==5 && o[2]==-1 && o[3]==-1);
       int t[] = {73,74,75,71,69,72,76,73}, w[8], e[] = {1,1,4,2,1,1,0,0}; dailyTemperatures(t,8,w);
@@ -67,11 +79,11 @@ int main(void) {
         for (i = 0; i < n; i++) { k = -1; for (j = i + 1; j < n; j++) if (a[j] > a[i]) { k = j; break; }
             CHECK(o[i] == (k < 0 ? -1 : a[k]) && w[i] == (k < 0 ? 0 : k - i)); } }
     /* P37 */
-    { stockSpanner s; int p[] = {100,80,60,70,60,75,85}, e[] = {1,1,1,2,1,4,6}; ssInit(&s);
-      for (i = 0; i < 7; i++) CHECK(ssNext(&s, p[i]) == e[i]); }
-    for (it = 0; it < 2000; it++) { stockSpanner s; int n = 1 + rnd(30), p[30], j; ssInit(&s);
+    { StockSpanner s; int p[] = {100,80,60,70,60,75,85}, e[] = {1,1,1,2,1,4,6};
+      for (i = 0; i < 7; i++) CHECK(s.next(p[i]) == e[i]); }
+    for (it = 0; it < 2000; it++) { StockSpanner s; int n = 1 + rnd(30), p[30], j;
         for (i = 0; i < n; i++) { p[i] = rnd(10); for (j = i; j >= 0 && p[j] <= p[i]; j--) {}
-            CHECK(ssNext(&s, p[i]) == i - j); } }
+            CHECK(s.next(p[i]) == i - j); } }
     /* P38 */
     { int a[] = {5,10,-5}, o[3]; CHECK(asteroidCollision(a,3,o)==2 && o[0]==5 && o[1]==10);
       int b[] = {8,-8}; CHECK(asteroidCollision(b,2,o)==0);
@@ -102,10 +114,10 @@ int main(void) {
     removeAdjacent("aaaa", out); CHECK(strcmp(out, "") == 0);
     removeAdjacent("abc", out); CHECK(strcmp(out, "abc") == 0);
     /* P41 */
-    for (it = 0; it < 1000; it++) { stack s; int n = rnd(30), prev = -1; stInit(&s);
-        for (i = 0; i < n; i++) stPush(&s, rnd(10));
-        sortStack(&s); CHECK(stSize(&s) == n);
-        while (stPop(&s, &x)) { CHECK(x >= prev); prev = x; } }
+    for (it = 0; it < 1000; it++) { stack<int> s; int n = rnd(30), prev = -1;
+        for (i = 0; i < n; i++) s.push(rnd(10));
+        s = sortStack(s); CHECK((int)s.size() == n);
+        while (!s.empty()) { CHECK(s.top() >= prev); prev = s.top(); s.pop(); } }
     /* P42: compare with brute force over all pop sequences of 1..n */
     { int pu[] = {1,2,3,4,5}, a[] = {4,5,3,2,1}, b[] = {4,3,5,1,2};
       CHECK(validateStackSequences(pu,a,5)==1 && validateStackSequences(pu,b,5)==0); }
