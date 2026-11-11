@@ -1,22 +1,21 @@
-// libs: lib/stackqueue.h
+// libs:
 // Pushes 1, 2, ..., n in this order and pops as soon as the top is the next
 // wanted item. Prints u for a push, o for a pop. Returns 1 if want[] can be
 // popped in this order.
 int produce(int want[], int n) {
-    stack s;
-    int next = 1, j = 0, top;
-    stInit(&s);
+    stack<int> s;
+    int next = 1, j = 0;
     while (j < n) {
-        if (stTop(&s, &top) && top == want[j]) {
-            stPop(&s, &top);
+        if (!s.empty() && s.top() == want[j]) {
+            s.pop();
             printf("o");
             j++;
         } else if (next <= n) {
-            stPush(&s, next);
+            s.push(next);
             next++;
             printf("u");
         } else {
-            printf(" stuck: top %d, want %d\n", top, want[j]);
+            printf(" stuck: top %d, want %d\n", s.top(), want[j]);
             return 0;
         }
     }
