@@ -5,7 +5,7 @@
 \begin{definition}[Stack]
 A \emph{stack} is a sequence in which insertions and deletions take place at one end
 only, the \emph{top}. Its operations are \cc{push(x)} (add $x$ on top), \cc{pop()}
-(remove and return the top item), \cc{top()} or \cc{peek()} (return the top item without
+(remove the top item), \cc{top()} or \cc{peek()} (return the top item without
 removing it), \cc{empty()} and \cc{size()}. The item removed by \cc{pop} is always the
 one inserted most recently: \emph{last in, first out} (LIFO).
 \end{definition}
@@ -15,25 +15,43 @@ finished first: an opening bracket waits for its closing bracket, an operator wa
 its right operand, a function call waits for the calls it made, an editor's last action
 is the first to be undone.
 
+\para{How we write it in C++} Throughout this reviewer a stack is used exactly like
+\cc{stack<int>} from \cc{<stack>} (the same style as \cc{queue<node*> q} in the lecture
+code on trees):
+\begin{lstlisting}[style=starter]
+stack<int> st;          // an empty stack
+st.push(5);             // add 5 on top
+st.push(8);
+int x = st.top();       // x = 8: read the top, it stays on the stack
+st.pop();               // remove the top (pop() returns nothing)
+if (st.empty()) ...     // true if there are no items
+int n = st.size();      // number of items
+\end{lstlisting}
+No \cc{\&} and no \cc{*} are needed: you call the functions \emph{on} the stack with a
+dot. Note that \cc{pop()} does not return the item; to ``pop into \cc{x}'' write
+\cc{x = st.top(); st.pop();}.
+
 \begin{note}{Popping an empty stack}
 \cc{pop} and \cc{top} on an empty stack are errors (\emph{stack underflow}); \cc{push} on
-a full fixed-capacity stack is \emph{stack overflow}. The library below reports both
-through a return value of $0$ and then leaves the output parameter \emph{unchanged}. A
-client that ignores the return value reads whatever was in its variable before ---
-a favourite twist in tracing questions.
+a full fixed-capacity stack is \emph{stack overflow}. With \cc{stack<int>} calling
+\cc{top()} on an empty stack is undefined behaviour (garbage or a crash), so always
+test \cc{!st.empty()} first, typically as \cc{while (!st.empty() \&\& st.top() < x)}.
+The \cc{\&\&} stops early, so \cc{top()} is never called on an empty stack.
 \end{note}
 
 \section{Implementations}
 
-\para{Array stack} Keep the items in \cc{items[0..size-1]} with the top at
-\cc{items[size-1]}. Then push writes \cc{items[size++]} and pop reads
-\cc{items[--size]}: the top is at the \emph{rear} of the array list, where insertion and
+\para{Array stack} Keep the items in \cc{items[0..count-1]} with the top at
+\cc{items[count-1]}. Then push writes \cc{items[count++]} and pop just does
+\cc{count--}: the top is at the \emph{rear} of the array list, where insertion and
 deletion cost $\Theta(1)$ (Theorem~\ref{thm:shift}). Putting the top at \cc{items[0]}
 would make both $\Theta(n)$.
 
-\listingfile[lastline=31,label=lst:stack]{lib/stackqueue.h}{The array stack used
-throughout Parts II and III (first part of \cc{stackqueue.h}). The struct contains the
-array, so it must be passed by pointer.}
+\listingfile[lastline=27,label=lst:stack]{lib/stackqueue.h}{An array stack written as a
+C++ class (first part of \cc{stackqueue.h}). It has the same functions as
+\cc{stack<int>}, so if an exam asks you to \emph{implement} a stack you write this, and
+every solution in this reviewer still works with \cc{Stack st;} instead of
+\cc{stack<int> st;}.}
 
 \para{Growable stack} With a vector instead of a fixed array (Section~\ref{sec:vector}
 of Chapter~\ref{ch:arrays}), push is $\Theta(1)$ amortised (Theorem~\ref{thm:amortised})
@@ -68,7 +86,7 @@ space      & \cc{MAX} cells & $\le 3n$ cells & $n$ nodes, one pointer each\\\bot
 \node[above,font=\scriptsize] at (9,0.55) {after \texttt{push(7)}: size 4};
 \foreach \v [count=\i from 0] in {4,9,2,7,{}} \node[cell] (c\i) at (\i+7,-1.9) {\v};
 \node[cell,shd] at (10,-1.9) {7};
-\node[below,font=\scriptsize,align=center] at (9,-2.4) {after \texttt{pop()}: size 3, returns 7;\\ the 7 stays in the cell but is not on the stack};
+\node[below,font=\scriptsize,align=center] at (9,-2.4) {after \texttt{top()} gives 7 and \texttt{pop()}: size 3;\\ the 7 stays in the cell but is not on the stack};
 \end{tikzpicture}
 \caption{The array stack. A popped value remains in its cell (Example~\ref{ex:alinv}).}
 \end{figure}
@@ -82,7 +100,7 @@ the opener it must match is the most recent one not yet matched, the top of the 
 pop it and compare. The string is balanced if and only if no comparison fails, no pop
 finds the stack empty, and the stack is empty at the end.
 
-\listingfile[label=lst:balanced]{sol/p32.c}{Balanced brackets (Problem~\ref{prob:32}).}
+\listingfile[label=lst:balanced]{sol/p32.cpp}{Balanced brackets (Problem~\ref{prob:32}).}
 
 The three ways to fail are three different strings: \cc{"(]"} (wrong kind),
 \cc{"())"} (closer with nothing open) and \cc{"(()"} (opener never closed). A counter
@@ -112,7 +130,7 @@ and, for left-associative operators, those of \emph{equal} precedence. Then \cc{
 pushed. A \cc{(} is pushed and acts as a floor; a \cc{)} pops to the output until the
 matching \cc{(}, which is discarded. At the end, the remaining operators are popped.
 
-\listingfile[label=lst:postfix]{sol/p33.c}{Infix to postfix and postfix evaluation
+\listingfile[label=lst:postfix]{sol/p33.cpp}{Infix to postfix and postfix evaluation
 (Problem~\ref{prob:33}); single-digit operands.}
 
 \begin{table}[ht]\centering\small
@@ -151,7 +169,7 @@ answer is still unknown. When \cc{a[i]} arrives, every waiting index $j$ with
 $\cc{a[j]}<\cc{a[i]}$ has found its answer, $\cc{a[i]}$, and is popped; then $i$ itself
 starts waiting. An index that is still waiting has no greater value to its right.
 
-\listingfile[label=lst:nextgreater]{sol/p35.c}{Next greater element
+\listingfile[label=lst:nextgreater]{sol/p35.cpp}{Next greater element
 (Problem~\ref{prob:35}): the template of all monotonic-stack solutions.}
 
 \begin{proposition}[The stack is monotonic]

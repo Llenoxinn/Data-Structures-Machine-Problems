@@ -1,8 +1,7 @@
 \section{Stacks}\label{sec:probstacks}
 
-In this section the stack of Listing~\ref{lst:stack} holds \cc{int}s; characters are
-pushed as their codes. ``Stack operations only'' means \cc{stInit}, \cc{stPush},
-\cc{stPop}, \cc{stTop}, \cc{stEmpty}, \cc{stSize}: no access to \cc{items[]}.
+``Stack operations only'' means \cc{push}, \cc{pop}, \cc{top}, \cc{empty} and
+\cc{size} of \cc{stack<int>} (or \cc{stack<char>}); no other access to the items.
 
 \problem{32}{Valid brackets}{Easy}
 Given a string \cc{s} containing only the characters \cc{( ) [ ] \{ \}}, return 1 if
@@ -49,11 +48,16 @@ int evalPostfix(char p[]);
 Design a stack that supports \cc{push}, \cc{pop} and \cc{min} (the smallest item
 currently on the stack), each in $O(1)$ time.
 \begin{lstlisting}[style=starter]
-typedef struct { stack all; stack mins; } minStack;
-void msInit(minStack *m);
-void msPush(minStack *m, int x);
-int msPop(minStack *m, int *x);    // 0 if empty
-int msMin(minStack *m, int *x);    // 0 if empty
+class MinStack {
+public:
+    stack<int> all;
+    stack<int> mins;
+    void push(int x);
+    void pop();
+    int top();
+    int getMin();
+    bool empty();
+};
 \end{lstlisting}
 \permitted Stack operations on the two member stacks.
 \required Every operation $O(1)$.
@@ -63,7 +67,7 @@ $x\le$ the current minimum), and explain why the test must be $\le$, not $<$.
 push 5 3 7 3 1; min & 1\\
 pop; pop; min & 3 (stack 5 3 7)\\
 push 2; min; pop; min & 2; 3\\
-min on an empty stack & fails (0)\\
+pop everything; empty() & true\\
 \end{tests}
 
 \problem{35}{Next greater element}{Medium}
@@ -103,13 +107,16 @@ void dailyTemperatures(int t[], int n, int wait[]);
 \problem{37}{Online stock span}{Medium}
 Prices of a stock arrive one per day. The \emph{span} of today's price is the number of
 consecutive days, ending today and going backwards, on which the price was $\le$ today's
-price. Implement \cc{ssNext}, which receives today's price and returns its span. The
+price. Implement \cc{next}, which receives today's price and returns its span. The
 prices are given one at a time: you cannot look at future prices, and you should not
 store the whole history.
 \begin{lstlisting}[style=starter]
-typedef struct { stack prices; stack spans; } stockSpanner;
-void ssInit(stockSpanner *s);
-int ssNext(stockSpanner *s, int price);
+class StockSpanner {
+public:
+    stack<int> prices;
+    stack<int> spans;
+    int next(int price);
+};
 \end{lstlisting}
 \permitted Stack operations on the two member stacks.
 \required $O(1)$ amortised per call.
@@ -173,10 +180,11 @@ abc & abc\\
 \end{tests}
 
 \problem{41}{Sort a stack}{Medium}
-Sort the stack \cc{s} so that the smallest item is on top. You may use one additional
+Return the stack \cc{s} sorted so that the smallest item is on top (it is called as
+\cc{s = sortStack(s);}). You may use one additional
 stack and scalar variables, nothing else.
 \begin{lstlisting}[style=starter]
-void sortStack(stack *s);
+stack<int> sortStack(stack<int> s);
 \end{lstlisting}
 \permitted Stack operations only; one extra stack.
 \constraints $0\le n\le100$.

@@ -124,10 +124,9 @@ Chapter~\ref{ch:solconcepts}; the numbers agree.
 \item An ArrayDeque holds $n=10$ items. How many items are moved by (a)~\cc{add(2,x)},
   (b)~\cc{add(7,x)}, (c)~\cc{remove(5)}, each applied to the original deque? What is the
   worst case, and why is it half that of an array list?
-\item A linked deque keeps its sentinel node \emph{inside} the struct
-  (\cc{linkedDeque\{ dqnode sentinel; int size; \}}). How many pointer assignments does
-  \cc{push\_front} perform on a non-empty deque, and on an empty one? What goes wrong after
-  \cc{linkedDeque e = d;}?
+\item A linked deque has a sentinel node (\cc{class LinkedDeque\{ dqnode *sentinel;
+  int count; \}}). How many pointer assignments does \cc{push\_front} perform on a
+  non-empty deque, and on an empty one? What goes wrong after \cc{LinkedDeque e = d;}?
 \item Seven people numbered $1..7$ stand in a circle and every third person is removed,
   counting from person 1. Give the order of removal and the survivor, and check the
   survivor with the recurrence $J(i)=(J(i-1)+k)\bmod i$.

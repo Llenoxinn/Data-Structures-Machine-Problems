@@ -192,11 +192,11 @@ Model answers to the concept questions of Chapter~\ref{ch:concepts}; the numbers
   up to $n$. (Tracing~\ref{trace:22}.)
 \item Four in both cases: \cc{n->prev}, \cc{n->next}, \cc{a->next}, \cc{b->prev}, where
   \cc{a} is the sentinel and \cc{b} is the old first node --- or, for an empty deque, the
-  sentinel again. There is no special case. After \cc{linkedDeque e = d;} the struct
-  \cc{e} contains a second sentinel at a different address; its \cc{next}/\cc{prev}
-  point into \cc{d}'s nodes, but those nodes point back to \cc{d}'s sentinel, so a walk
-  in \cc{e} never returns to \cc{e}'s sentinel, and an operation on \cc{e} corrupts
-  \cc{d}. (Tracing~\ref{trace:25}.)
+  sentinel again. There is no special case. After \cc{LinkedDeque e = d;} only the pointer
+  \cc{sentinel} and the number \cc{count} are copied: \cc{e} and \cc{d} share the same
+  nodes (a shallow copy). A push on \cc{d} shows up when walking \cc{e}, but
+  \cc{e.count} is not updated, so \cc{e.size()} is wrong; after \cc{d.clear()} the copy
+  still claims to hold items. (Tracing~\ref{trace:25}.)
 \item Removal order $3,6,2,7,5,1$; the survivor is \textbf{4}. Recurrence with $k=3$:
   $J(1)=0$, $J(2)=1$, $J(3)=1$, $J(4)=0$, $J(5)=3$, $J(6)=0$, $J(7)=3$; the survivor's
   number is $J(7)+1=4$. (Problem~\ref{prob:45}, Tracing~\ref{trace:18}.)

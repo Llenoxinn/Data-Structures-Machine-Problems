@@ -1,44 +1,48 @@
 \section{Queues}\label{sec:probqueues}
 
-``Queue operations only'' means \cc{qInit}, \cc{qEnq}, \cc{qDeq}, \cc{qFront},
-\cc{qEmpty}, \cc{qSize} of Listing~\ref{lst:queue}: no access to \cc{items[]} or
-\cc{front}.
+``Queue operations only'' means \cc{push}, \cc{pop}, \cc{front}, \cc{back}, \cc{empty}
+and \cc{size} of \cc{queue<int>}; no other access to the items.
 
 \problem{43}{A queue from two stacks}{Easy}
-Implement a FIFO queue using two stacks \cc{in} and \cc{out}: \cc{tsqPush} adds at the
-rear, \cc{tsqPop} removes from the front, \cc{tsqPeek} reads the front.
+Implement a FIFO queue using two stacks \cc{in} and \cc{out}: \cc{push} adds at the
+rear, \cc{pop} removes the front, \cc{front} reads the front.
 \begin{lstlisting}[style=starter]
-typedef struct { stack in; stack out; } twoStackQueue;
-void tsqInit(twoStackQueue *q);
-void tsqPush(twoStackQueue *q, int x);
-int tsqPop(twoStackQueue *q, int *x);    // 0 if empty
-int tsqPeek(twoStackQueue *q, int *x);   // 0 if empty
-int tsqEmpty(twoStackQueue *q);
+class MyQueue {
+public:
+    stack<int> in;
+    stack<int> out;
+    void push(int x);
+    void pop();
+    int front();
+    bool empty();
+};
 \end{lstlisting}
 \permitted Stack operations only.
 \required Every operation $O(1)$ amortised.
 \bonus Prove the amortised bound (Theorem~\ref{thm:twostack}).
 \begin{tests}
-push 1, push 2, peek, pop, empty & 1, 1, 0\\
-then push 3, pop, pop, pop & 2, 3, fails\\
+push 1, push 2, front, pop, empty & 1, (removed), false\\
+then push 3; front, pop; front, pop; empty & 2, 3, true\\
 \end{tests}
 
 \problem{44}{A stack from a queue}{Easy}
 Implement a LIFO stack using \emph{one} queue.
 \begin{lstlisting}[style=starter]
-typedef struct { queue q; } queueStack;
-void qsInit(queueStack *s);
-void qsPush(queueStack *s, int x);
-int qsPop(queueStack *s, int *x);    // 0 if empty
-int qsTop(queueStack *s, int *x);    // 0 if empty
-int qsEmpty(queueStack *s);
+class MyStack {
+public:
+    queue<int> q;
+    void push(int x);
+    void pop();
+    int top();
+    bool empty();
+};
 \end{lstlisting}
 \permitted Queue operations only.
 \required One of push and pop in $O(1)$, the other in $O(n)$.
 \begin{tests}
-push 1, push 2, top, pop, empty & 2, 2, 0\\
-then pop, empty & 1, 1\\
-push 1, push 2, push 3, pop, push 4, pop, pop & 3, 4, 2\\
+push 1, push 2, top, pop, empty & 2, (removed), false\\
+top, pop, empty & 1, (removed), true\\
+push 1, 2, 3; top, pop; push 4; top, pop; top & 3, 4, 2\\
 \end{tests}
 
 \problem{45}{The Josephus problem}{Medium}
@@ -61,10 +65,11 @@ n=1, k=5 & 1\\
 \end{tests}
 
 \problem{46}{Reverse the first $k$ items of a queue}{Easy}
-Reverse the order of the first $k$ items of the queue \cc{q}; the other items keep their
+Return the queue \cc{q} with the order of its first $k$ items reversed; the other items keep their
 order and stay behind them.
 \begin{lstlisting}[style=starter]
-void reverseFirstK(queue *q, int k);   // 0 <= k <= size
+queue<int> reverseFirstK(queue<int> q, int k);   // 0 <= k <= size
+                        // called as q = reverseFirstK(q, k);
 \end{lstlisting}
 \permitted Queue operations on \cc{q}; one stack.
 \required $O(n)$ time.
@@ -77,12 +82,14 @@ void reverseFirstK(queue *q, int k);   // 0 <= k <= size
 
 \problem{47}{Number of recent calls}{Easy}
 A counter receives pings at times \cc{t} (in milliseconds), each strictly later than the
-previous one. \cc{rcPing(r, t)} records the ping and returns how many pings happened in
+previous one. \cc{ping(t)} records the ping and returns how many pings happened in
 the inclusive range $[t-3000,\,t]$.
 \begin{lstlisting}[style=starter]
-typedef struct { queue times; } recentCounter;
-void rcInit(recentCounter *r);
-int rcPing(recentCounter *r, int t);
+class RecentCounter {
+public:
+    queue<int> times;
+    int ping(int t);
+};
 \end{lstlisting}
 \permitted Queue operations on \cc{times}.
 \constraints At most 100 pings fall inside any window.
@@ -96,7 +103,7 @@ ping 1, 5000, 5001 & 1, 1, 2\\
 A queue of even length holds $x_1\dots x_m\,y_1\dots y_m$. Rearrange it into
 $x_1y_1x_2y_2\dots x_my_m$.
 \begin{lstlisting}[style=starter]
-void interleaveHalves(queue *q);
+queue<int> interleaveHalves(queue<int> q);   // called as q = interleaveHalves(q);
 \end{lstlisting}
 \permitted Queue operations on \cc{q}; one stack (no second queue, no array).
 \required $O(n)$ time.

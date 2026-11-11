@@ -4,7 +4,7 @@
 \idea The circular deque of Listing~\ref{lst:deque} with a run-time capacity. Front
 insertion steps \cc{front} back with \cc{(front - 1 + cap) \% cap}; rear deletion only
 decreases \cc{size}; the rear item is at \cc{(front + size - 1) \% cap}.
-\listingfile{sol/p50.c}{A circular deque of capacity $k$.}
+\listingfile{sol/p50.cpp}{A circular deque of capacity $k$.}
 \complexity Every operation $\Theta(1)$.
 \mistakes \cc{(front - 1) \% cap}, which is $-1$ when \cc{front} is 0
 (Tracing~\ref{trace:21}); using the constant 1000 instead of \cc{cap} in the modulo
@@ -14,18 +14,19 @@ decreases \cc{size}; the rear item is at \cc{(front + size - 1) \% cap}.
 The solution is Listing~\ref{lst:linkeddeque} of Chapter~\ref{ch:deques};
 Tracing~\ref{trace:25} runs it.
 \idea With the sentinel closed into a circle, every insertion is
-\cc{ldLinkBetween(a, b)} for two neighbours and every removal is \cc{ldUnlink(n)}; the
+\cc{linkBetween(a, b, x)} for two neighbours and every removal is \cc{unlink(n)}; the
 four end operations differ only in the neighbours they pass.
-\complexity Every operation $\Theta(1)$; \cc{ldFree} $\Theta(n)$.
+\complexity Every operation $\Theta(1)$; \cc{clear} $\Theta(n)$.
 \mistakes Initialising the sentinel's pointers to \cc{NULL} instead of to itself; copying
-the struct (bonus: the copy's sentinel has a different address, while the nodes still
-point to the original sentinel, so walks from the copy never return to it); freeing a
+the object (bonus: \cc{LinkedDeque e = d;} copies only the \cc{sentinel} pointer and
+\cc{count}, so \cc{e} shares \cc{d}'s nodes and its \cc{count} goes stale as soon as
+\cc{d} changes); freeing a
 node before reading its neighbours.
 
 \solution{Problem}{52}
 \idea Filter and lower-case the characters into a deque; then repeatedly pop one from
 each end and compare, until at most one is left.
-\listingfile{sol/p52.c}{Valid palindrome with a deque.}
+\listingfile{sol/p52.cpp}{Valid palindrome with a deque.}
 \complexity $\Theta(n)$ time and $O(n)$ space. Bonus: two indices from both ends that
 skip non-alphanumeric characters give $O(1)$ space.
 \mistakes Comparing upper and lower case directly; keeping spaces and punctuation;
@@ -46,7 +47,7 @@ update a decreasing deque (front: index of the maximum) and an increasing deque 
 index of the minimum). While $\max-\min>\mathit{limit}$, advance \cc{left} and drop the
 front of a deque when its index has fallen out. The window is then the longest valid one
 ending at \cc{right}.
-\listingfile{sol/p54.c}{Longest subarray with $\max-\min\le\mathit{limit}$.}
+\listingfile{sol/p54.cpp}{Longest subarray with $\max-\min\le\mathit{limit}$.}
 \complexity $\Theta(n)$: each index enters and leaves each deque at most once, and
 \cc{left} only increases.
 \mistakes Recomputing the maximum and minimum of the window by a scan ($\Theta(n^2)$);
@@ -75,7 +76,7 @@ most one item across the boundary.
 \caption{The front-middle-back queue after the first four test operations.}
 \end{figure}
 
-\listingfile{sol/p55.c}{Front-middle-back queue.}
+\listingfile{sol/p55.cpp}{Front-middle-back queue.}
 \complexity Every operation $\Theta(1)$.
 \mistakes Using the \emph{back} middle when the size is even (the statement asks for the
 front-most); rebalancing after \cc{pushMiddle}/\cc{popMiddle} with the wrong rule ---
@@ -91,13 +92,13 @@ right. Removal mirrors this.
 \complexity $O(1+\min(i,n-i))$ per operation.
 \mistakes Moving the left block in the wrong order (when moving left, copy from the lowest
 index up; when moving right, from the highest index down); \cc{j-1} without \cc{+100};
-forgetting that \cc{adAdd} accepts $i=n$ but \cc{adRemove} does not.
+forgetting that \cc{add} accepts $i=n$ but \cc{remove} does not.
 
 \solution{Problem}{57}
 \idea Dynamic programming: $\mathit{best}[i]=a[i]+\max(\mathit{best}[i-k..i-1])$, with
 $\mathit{best}[0]=a[0]$. The maximum over the last $k$ values is a sliding window maximum,
 kept by a deque of indices whose $\mathit{best}$ values decrease from front to back.
-\listingfile{sol/p57.c}{Jump game VI.}
+\listingfile{sol/p57.cpp}{Jump game VI.}
 \complexity $\Theta(n)$ time (each index enters and leaves the deque once) and $\Theta(n)$
 space for \cc{best}; the direct DP is $\Theta(nk)$.
 \mistakes A greedy jump to the largest reachable value (it fails on the third sample test); expiring the front with \cc{j <= i - k} (index $i-k$ is still reachable);

@@ -63,35 +63,34 @@ The lists are built with a pointer to the last \cc{next} field. Give the three l
 \programfile{tracing/t09.c}
 
 \tracing{10}{Stacks and queues in the same function}
-The program uses \cc{stackqueue.h} (Listings~\ref{lst:stack} and~\ref{lst:queue}): every
-pop, dequeue, top or front returns 0 and leaves its output variable unchanged when the
-structure is empty.
-\programfile{tracing/t10.c}
+The program uses \cc{stack<int>} and \cc{queue<int>}: \cc{top()}/\cc{front()} read an
+item without removing it, \cc{pop()} removes it and returns nothing.
+\programfile{tracing/t10.cpp}
 
 \tracing{11}{Infix to postfix with a depth counter}
 A variant of the shunting-yard algorithm on letters. Give the output string and the
 maximum size the operator stack reaches.
-\programfile{tracing/t11.c}
+\programfile{tracing/t11.cpp}
 
 \tracing{12}{A queue from two stacks}
 Give the output, and state how many items are moved from \cc{in} to \cc{out} in total.
-\programfile{tracing/t12.c}
+\programfile{tracing/t12.cpp}
 
 \tracing{13}{Which operand is popped first?}
 Both functions evaluate a postfix expression of single digits with integer division.
 They differ only in the order of the two pops. Give the table.
-\programfile{tracing/t13.c}
+\programfile{tracing/t13.cpp}
 
 \tracing{14}{Stack permutations}
 \cc{produce} tries to pop the numbers in the order \cc{want[]} while pushing
 $1,2,3,4$ in order. Give the five lines and the count.
-\programfile{tracing/t14.c}
+\programfile{tracing/t14.cpp}
 
 \tracing{15}{The stock spanner}
-The program uses \cc{stockSpanner} of Problem~\ref{prob:37}: \cc{ssNext} pops every
+The program uses \cc{StockSpanner} of Problem~\ref{prob:37}: \cc{next} pops every
 (price, span) pair whose price is $\le$ today's price, adds their spans to 1, and pushes
 today's pair. \cc{show} prints the pairs from bottom to top.
-\programfile{tracing/t15.c}
+\programfile{tracing/t15.cpp}
 
 \tracing{16}{The mid-pointer list}
 The program uses \cc{mlist} of Problem~\ref{prob:24}: a singly linked list with
@@ -108,7 +107,7 @@ $[\cc{lo},\cc{hi})$.
 \tracing{18}{Josephus with a twist}
 Six people, every third one leaves. Give the order of removal and the winner, and check
 the winner with the recurrence of Chapter~\ref{ch:queues}.
-\programfile{tracing/t18.c}
+\programfile{tracing/t18.cpp}
 
 \tracing{19}{Splicing lists}
 The program uses \cc{sll.h} and the two functions of Problem~\ref{prob:18}:
@@ -124,18 +123,18 @@ The program uses \cc{sll.h} and the two functions of Problem~\ref{prob:18}:
 \tracing{21}{Circular deque: the raw array}
 A circular deque of capacity 5. \cc{pushFront} steps the front back by adding 4 instead
 of subtracting 1. The last line prints three C expressions.
-\programfile{tracing/t21.c}
+\programfile{tracing/t21.cpp}
 
 \tracing{22}{ArrayDeque: which side moves?}
 Positional insertion in a circular array of capacity 8 that moves the shorter side.
 \cc{add} returns the number of items moved.
-\programfile{tracing/t22.c}
+\programfile{tracing/t22.cpp}
 
 \tracing{23}{Sliding window maximum}
 The program uses \cc{deque.h} (Listing~\ref{lst:deque}) and prints the deque of indices
 after each step of the algorithm of Problem~\ref{prob:53}. Give the eight lines. Watch the
 \emph{two} equal values.
-\programfile{tracing/t23.c}
+\programfile{tracing/t23.cpp}
 
 \tracing{24}{A circular list as a queue}
 The program uses Listing~\ref{lst:circular}: \cc{enq(\&last, x)} links a new node after
@@ -144,7 +143,7 @@ The program uses Listing~\ref{lst:circular}: \cc{enq(\&last, x)} links a new nod
 The main program also moves the pointer by hand.
 \programfile{tracing/t24.c}
 
-\tracing{25}{The sentinel deque, and a struct copy}
+\tracing{25}{The sentinel deque, and a shallow copy}
 The program uses the linked deque of Problem~\ref{prob:51} (Listing~\ref{lst:linkeddeque}).
 Print 1 for true and 0 for false in the comparisons.
-\programfile{tracing/t25.c}
+\programfile{tracing/t25.cpp}

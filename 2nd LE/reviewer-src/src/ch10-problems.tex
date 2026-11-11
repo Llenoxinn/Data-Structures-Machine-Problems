@@ -10,13 +10,14 @@ Chapter~\ref{ch:solproblems} follow the same rule.
 
 \para{Interfaces assumed throughout} Array list: \cc{items[]} and \cc{size}. SLL:
 Listing~\ref{lst:sll} (\cc{snode}, \cc{sll} with \cc{head}, \cc{tail}, \cc{size}). DLL:
-Listing~\ref{lst:dll} (\cc{node}, \cc{list}). Stack and queue: Listings~\ref{lst:stack}
-and~\ref{lst:queue} (\cc{stInit}, \cc{stPush}, \cc{stPop}, \cc{stTop}, \cc{stEmpty},
-\cc{stSize}; \cc{qInit}, \cc{qEnq}, \cc{qDeq}, \cc{qFront}, \cc{qEmpty}, \cc{qSize}).
-Deque: Listing~\ref{lst:deque} (\cc{dqInit}, \cc{dqPushFront}, \cc{dqPushBack},
-\cc{dqPopFront}, \cc{dqPopBack}, \cc{dqFront}, \cc{dqBack}, \cc{dqEmpty}, \cc{dqSize}).
-Every pop, top, front and back returns 1 on success and 0 when the structure is empty,
-and passes the item through an \cc{int *}. When a problem names a function, use exactly
+Listing~\ref{lst:dll} (\cc{node}, \cc{list}). Stack, queue, deque (C++): \cc{stack<int>}
+(\cc{push}, \cc{pop}, \cc{top}, \cc{empty}, \cc{size}), \cc{queue<int>} (\cc{push},
+\cc{pop}, \cc{front}, \cc{back}, \cc{empty}, \cc{size}) and \cc{deque<int>}
+(\cc{push\_front}, \cc{push\_back}, \cc{pop\_front}, \cc{pop\_back}, \cc{front},
+\cc{back}, \cc{empty}, \cc{size}), or the classes \cc{Stack}, \cc{Queue}, \cc{Deque} of
+Listings~\ref{lst:stack}, \ref{lst:queue} and~\ref{lst:deque}, which have the same
+functions. \cc{pop} returns nothing, and \cc{top}/\cc{front}/\cc{back} must not be called
+on an empty structure. When a problem names a function, use exactly
 that signature; when it forbids an operation, even a correct use of it forfeits credit.
 
 \input{ch10a-arrays}

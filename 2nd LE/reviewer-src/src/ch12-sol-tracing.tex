@@ -82,9 +82,9 @@ $3,5,2,8,6,9$ the ascents are $3<5$, $2<8$, $6<9$: also 3.
 \solution{Tracing}{10}
 \outputfile{t10}
 Line 1: the stack gives its newest item 3, the queue its oldest 10. Then 3 joins the
-queue (\cc{[20 3]}) and 10 the stack (\cc{[1 2 10]}). Line 2: three pops succeed (10, 2,
-1) and the fourth fails: $r=3$ and \cc{x} keeps 1. Line 3: two dequeues succeed (20, 3):
-$r=2$, \cc{y}$=3$. Last line: 4 and 5 go stack $\to$ queue (\cc{5 4}) $\to$ stack
+queue (\cc{[20 3]}) and 10 the stack (\cc{[1 2 10]}). Line 2: the loop pops until the stack is
+empty, three times (10, 2, 1): $r=3$ and \cc{x} is the last popped item, 1. Line 3: two
+dequeues (20, 3): $r=2$, \cc{y}$=3$. Last line: 4 and 5 go stack $\to$ queue (\cc{5 4}) $\to$ stack
 (top 4). \emph{Twist:} two reversals cancel, so the items come out in push order.
 
 \solution{Tracing}{11}
@@ -193,10 +193,11 @@ returns 0 and \cc{x} keeps 4, the last item removed.
 
 \solution{Tracing}{25}
 \outputfile{t25}
-The empty deque's sentinel points to itself; \cc{ldPopBack} fails and leaves $x=-1$.
-After \cc{0 1 2 3}, popping both ends gives 3 and 0. The last item is 2 and the first
-node's \cc{prev} is the sentinel. \emph{Twist:} the copy \cc{e} has its own sentinel,
-but \cc{e.sentinel.next} is \cc{d}'s first node, whose \cc{prev} still points to
-\cc{d}'s sentinel (0). After \cc{ldPushFront(\&d,9)} the copy still thinks its first item
-is 1 and its size is 2 --- it is out of date and, once \cc{d} is freed, dangling. The
-deque \cc{d} is empty again after \cc{ldFree}.
+The empty deque's sentinel points to itself and the size is 0.
+After \cc{0 1 2 3}, reading and removing both ends gives 3 and 0. The last item is 2 and
+the first node's \cc{prev} is the sentinel. \emph{Twist:} \cc{LinkedDeque e = d;} copies
+only the members, the \emph{pointer} \cc{sentinel} and \cc{count}: both objects use the
+same sentinel (1) and \cc{e.size()} is 2. After \cc{d.push\_front(9)} the walk from
+\cc{e} also starts at 9 (shared nodes), but \cc{e.size()} is still 2. After
+\cc{d.clear()} the shared list is empty (the last 1), yet \cc{e.size()} still says 2: a
+shallow copy goes out of date.

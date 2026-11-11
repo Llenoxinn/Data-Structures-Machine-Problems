@@ -11,6 +11,20 @@ item removed is always the one that has waited longest: \emph{first in, first ou
 (FIFO).
 \end{definition}
 
+\para{How we write it in C++} A queue is used exactly like \cc{queue<int>} from
+\cc{<queue>}, as in the level-order traversal of the lecture code:
+\begin{lstlisting}[style=starter]
+queue<int> q;           // an empty queue
+q.push(10);             // enqueue at the back
+q.push(20);
+int x = q.front();      // x = 10: the oldest item, it stays in the queue
+q.pop();                // dequeue: remove the front (returns nothing)
+q.back();               // the newest item (20)
+q.empty();  q.size();
+\end{lstlisting}
+``Dequeue into \cc{x}'' is \cc{x = q.front(); q.pop();}. As with stacks, never call
+\cc{front()}, \cc{back()} or \cc{pop()} on an empty queue; test \cc{!q.empty()} first.
+
 Queues model waiting lines: print jobs, requests to a server, processes waiting for the
 processor (round-robin scheduling), messages between programs, and the frontier of a
 breadth-first search. In each case fairness means serving in order of arrival.
@@ -39,8 +53,9 @@ cells before \cc{front} are free (\emph{false overflow}).
 \end{itemize}
 Every operation is $\Theta(1)$, and all \cc{CAP} cells are usable.
 
-\listingfile[firstline=33,label=lst:queue]{lib/stackqueue.h}{The circular queue used in
-Parts II and III (second part of \cc{stackqueue.h}).}
+\listingfile[firstline=29,label=lst:queue]{lib/stackqueue.h}{A circular queue written as
+a C++ class (second part of \cc{stackqueue.h}); the fields \cc{first} and \cc{count}
+play the roles of \cc{front} and \cc{size} above. Same functions as \cc{queue<int>}.}
 
 \begin{figure}[ht]\centering
 \begin{tikzpicture}[x=7.5mm]
@@ -99,7 +114,7 @@ the top of a second stack \cc{out}; if \cc{out} is empty, first pop \emph{all} o
 \cc{in} and push the items onto \cc{out}. The transfer reverses the order, so the oldest
 item ends on top of \cc{out}.
 
-\listingfile[label=lst:twostack]{sol/p43.c}{A queue from two stacks
+\listingfile[label=lst:twostack]{sol/p43.cpp}{A queue from two stacks
 (Problem~\ref{prob:43}, Tracing~\ref{trace:12}).}
 
 \begin{theorem}[Two-stack queue]\label{thm:twostack}
@@ -111,7 +126,7 @@ operation costs $\Theta(1)$ amortised, although a single dequeue may cost $\Thet
 Follow one item. It is pushed onto \cc{in} once, popped from \cc{in} once, pushed onto
 \cc{out} once and popped from \cc{out} once: at most four stack operations, because
 items never go back from \cc{out} to \cc{in}. The items are at most $m$ in number, and
-besides moving items each queue operation does $O(1)$ work (one failed pop, one test),
+besides moving items each queue operation does $O(1)$ work (one \cc{empty()} test),
 so the total is $O(m)$.
 \end{proof}
 
@@ -134,7 +149,7 @@ Dequeueing an item and enqueueing it again moves it from the front to the rear:
 numbered $1..n$; counting starts at person 1, and every $k$-th person leaves the circle.
 Which one remains? Simulate: rotate $k-1$ people, then remove the next.
 
-\listingfile[label=lst:josephus]{sol/p45.c}{Josephus by simulation, $\Theta(nk)$, and by
+\listingfile[label=lst:josephus]{sol/p45.cpp}{Josephus by simulation, $\Theta(nk)$, and by
 the recurrence, $\Theta(n)$ (Problem~\ref{prob:45}).}
 
 \begin{proposition}[Josephus recurrence]
@@ -171,7 +186,7 @@ reverses that part. Reversing the first $k$ items of a queue
 (Problem~\ref{prob:46}): dequeue $k$ items onto a stack, pop them back into the queue
 (now they are reversed, but at the rear), then rotate the remaining $n-k$ items once
 around. Interleaving the two halves of a queue (Problem~\ref{prob:48}) is solved the
-same way with a few more passes. In such problems, remember that \cc{qSize(\&q)}
+same way with a few more passes. In such problems, remember that \cc{q.size()}
 \emph{changes} while the loop runs: read it into a variable first.
 
 \begin{table}[ht]\centering\small

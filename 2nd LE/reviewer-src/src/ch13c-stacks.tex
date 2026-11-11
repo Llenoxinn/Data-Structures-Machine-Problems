@@ -6,8 +6,8 @@ The solution is Listing~\ref{lst:balanced} of Chapter~\ref{ch:stacks}.
 top. Fail on a mismatch, on a closer with an empty stack, or on openers left at the end.
 \complexity $\Theta(n)$ time, $O(n)$ stack.
 \mistakes Returning 1 at the end without checking that the stack is empty (\cc{"(("});
-popping without checking the return value, so that \cc{"))"} compares against a stale
-variable; using counters, which accept \cc{"([)]"}.
+calling \cc{top()} without first checking \cc{empty()}, so that \cc{"))"} reads from an
+empty stack; using counters, which accept \cc{"([)]"}.
 
 \solution{Problem}{33}
 The solution is Listing~\ref{lst:postfix} of Chapter~\ref{ch:stacks}; the table there
@@ -24,7 +24,7 @@ precedence and is right-associative, so an incoming \cc{\^} pops only operators 
 \solution{Problem}{34}
 \idea Keep a second stack \cc{mins} in step with \cc{all}: its top is always the minimum
 of the whole stack. Each push pushes $\min(x,\text{top of mins})$; each pop pops both.
-\listingfile{sol/p34.c}{A min stack.}
+\listingfile{sol/p34.cpp}{A min stack.}
 \complexity Every operation $\Theta(1)$; $2n$ cells. In the bonus version \cc{mins} is
 pushed only when $x\le$ its top and popped only when the popped item equals its top; the
 test must be $\le$ so that a repeated minimum (pushes 3, 3, pop) is still on \cc{mins}
@@ -46,7 +46,7 @@ right cell); using \cc{<=}, which treats an equal value as greater (\cc{[1,1]} w
 \solution{Problem}{36}
 \idea The same monotonic stack: the waiting days, with non-increasing temperatures.
 When day $i$ is strictly warmer than the day $j$ on top, day $j$ waited $i-j$ days.
-\listingfile{sol/p36.c}{Daily temperatures.}
+\listingfile{sol/p36.cpp}{Daily temperatures.}
 \complexity $\Theta(n)$ time.
 \mistakes Using \cc{<=} (equal temperatures are not warmer); forgetting to write 0 for the
 days left on the stack (here written explicitly, since \cc{wait} is not initialised).
@@ -55,7 +55,7 @@ days left on the stack (here written explicitly, since \cc{wait} is not initiali
 \idea The online ``previous greater'' problem. Keep pairs (price, span) on two stacks in
 step, prices strictly decreasing from bottom to top. A new price absorbs every pair with a
 price $\le$ it, together with the days that pair already covered.
-\listingfile{sol/p37.c}{Online stock span.}
+\listingfile{sol/p37.cpp}{Online stock span.}
 \complexity $\Theta(1)$ amortised per call: every pair is pushed once and popped at most
 once (Tracing~\ref{trace:15}).
 \mistakes Storing every price and scanning backwards ($\Theta(n)$ per call, $\Theta(n^2)$
@@ -67,7 +67,7 @@ right-mover on top can collide; it destroys smaller right-movers one after anoth
 with an equal one, or dies against a larger one. Left-movers with nothing to their left
 that moves right survive. At the end the stack, read from bottom to top, is the answer;
 popping it fills \cc{out} from the right.
-\listingfile{sol/p38.c}{Asteroid collision.}
+\listingfile{sol/p38.cpp}{Asteroid collision.}
 \complexity $\Theta(n)$: each asteroid is pushed and popped at most once.
 \mistakes Letting a right-mover collide with a left-mover on top (\cc{[-2,-1,1,2]}: they
 move apart); stopping after one collision; returning the survivors in reverse order.
@@ -77,7 +77,7 @@ move apart); stopping after one collision; returning the survivors in reverse or
 \cc{out} where the bracketed part starts. Characters are written straight to \cc{out}. At
 \cc{]} the part \cc{out[start..len-1]} is already there once; append it $k-1$ more times.
 Nested brackets work because the inner part is expanded before the outer \cc{]} copies it.
-\listingfile{sol/p39.c}{Decode string.}
+\listingfile{sol/p39.cpp}{Decode string.}
 \complexity Linear in the length of the output (every output character is written once).
 \mistakes Reading only one digit of the count (\cc{10[a]}); not resetting the count after
 \cc{[}; copying the part $k$ times instead of $k-1$.
@@ -86,7 +86,7 @@ Nested brackets work because the inner part is expanded before the outer \cc{]} 
 \idea The stack holds the letters that survived so far. A letter equal to the top cancels
 with it; otherwise it is pushed. Cancellations can cascade (\cc{abba}) because after a pop
 the new top is the next older survivor.
-\listingfile{sol/p40.c}{Removing adjacent duplicates.}
+\listingfile{sol/p40.cpp}{Removing adjacent duplicates.}
 \complexity $\Theta(n)$.
 \mistakes Removing only one pass of pairs (\cc{abbaca} becomes \cc{aaca}, not \cc{ca});
 copying the stack to \cc{out} in reverse order.
@@ -95,7 +95,7 @@ copying the stack to \cc{out} in reverse order.
 \idea Insertion sort between two stacks. Pop $x$ from \cc{s}; move back to \cc{s} every
 item of \cc{r} larger than $x$; push $x$ on \cc{r}. Then \cc{r} is sorted with the
 largest on top; pouring it into \cc{s} puts the smallest on top.
-\listingfile{sol/p41.c}{Sorting a stack with one extra stack.}
+\listingfile{sol/p41.cpp}{Sorting a stack with one extra stack.}
 \complexity $\Theta(n^2)$ in the worst case (each item may be moved back and forth $O(n)$
 times), $\Theta(n)$ if \cc{s} is already ordered suitably.
 \mistakes Comparing with \cc{>=}, which still sorts but moves equal items needlessly;
@@ -107,7 +107,7 @@ the top is the next wanted item. The sequence is valid iff every item was popped
 an item must be pushed before it is popped, and once the top is the wanted item, popping
 now is never worse than pushing more (which would only bury it), so the greedy rule
 never misses a solution (Section~\ref{sec:stackperm}).
-\listingfile{sol/p42.c}{Validate stack sequences.}
+\listingfile{sol/p42.cpp}{Validate stack sequences.}
 \complexity $\Theta(n)$: $n$ pushes and at most $n$ pops.
 \mistakes Popping only once after each push (\cc{4 5 3 2 1} needs several pops at the
 end); reading \cc{popped[j]} with $j=n$ (guarded here by the empty stack after the last

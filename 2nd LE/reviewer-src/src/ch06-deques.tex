@@ -9,6 +9,15 @@ insertions and deletions may take place at both ends. Its operations are
 \cc{front()}, \cc{back()}, \cc{empty()} and \cc{size()}.
 \end{definition}
 
+\para{How we write it in C++} Exactly like \cc{deque<int>} from \cc{<deque>}:
+\begin{lstlisting}[style=starter]
+deque<int> d;
+d.push_back(1);  d.push_front(2);     // d is 2 1
+int a = d.front();  int b = d.back(); // a = 2, b = 1 (nothing removed)
+d.pop_front();   d.pop_back();        // remove (they return nothing)
+d.empty();  d.size();  d[i];          // d[i] reads item i
+\end{lstlisting}
+
 A deque generalises both earlier structures. Using only \cc{push\_back} and
 \cc{pop\_back} it is a stack; using only \cc{push\_back} and \cc{pop\_front} it is a
 queue. Two restricted forms appear in textbooks: an \emph{input-restricted} deque
@@ -17,8 +26,8 @@ queue. Two restricted forms appear in textbooks: an \emph{input-restricted} dequ
 
 \begin{example}
 Starting from an empty deque, the operations \cc{push\_back(1)}, \cc{push\_front(2)},
-\cc{push\_back(3)}, \cc{push\_front(4)} produce \cc{4 2 1 3}. Then \cc{pop\_back()}
-returns 3 and \cc{pop\_front()} returns 4, leaving \cc{2 1}.
+\cc{push\_back(3)}, \cc{push\_front(4)} produce \cc{4 2 1 3}. Then \cc{back()} is 3 and
+\cc{front()} is 4; \cc{pop\_back()} and \cc{pop\_front()} remove them, leaving \cc{2 1}.
 \end{example}
 
 \section{The circular-array deque}
@@ -32,8 +41,8 @@ The circular buffer of Chapter~\ref{ch:queues} already supports \cc{push\_back} 
   decrease \cc{size} (\cc{front} does not change).
 \end{itemize}
 
-\listingfile[label=lst:deque]{lib/deque.h}{The circular-array deque used in Parts II and
-III (file \cc{deque.h}).}
+\listingfile[label=lst:deque]{lib/deque.h}{A circular-array deque written as a C++ class
+(file \cc{deque.h}). Same functions as \cc{deque<int>}.}
 
 \begin{note}{The modulo trap}
 In C and C++ the result of \cc{\%} has the sign of the left operand, because integer
@@ -74,7 +83,7 @@ items to the \emph{left} of $i$ one cell to the left, after stepping \cc{j} back
 The ArrayDeque chooses the side with fewer items: the left side if $i<n/2$, otherwise the
 right side. Removal is symmetric.
 
-\listingfile[label=lst:arraydeque]{sol/p56.c}{ArrayDeque with positional insertion and
+\listingfile[label=lst:arraydeque]{sol/p56.cpp}{ArrayDeque with positional insertion and
 removal (Problem~\ref{prob:56}, Tracing~\ref{trace:22}).}
 
 \begin{theorem}[Cost of ArrayDeque]
@@ -93,23 +102,21 @@ $\min(i,n-i)$ up to one, and each move is one assignment.
 
 A singly linked list cannot be a deque with all operations in $\Theta(1)$: \cc{pop\_back}
 needs the predecessor of the tail. A doubly linked list can. With a \emph{sentinel}
-(Section~\ref{sec:sentinel}) closed into a circle --- \cc{sentinel.next} is the first
-item, \cc{sentinel.prev} the last, and both point to the sentinel itself when the deque
+(Section~\ref{sec:sentinel}) closed into a circle --- \cc{sentinel->next} is the first
+item, \cc{sentinel->prev} the last, and both point to the sentinel itself when the deque
 is empty --- every insertion is ``link a node between two neighbours'' and every removal
 is ``unlink a node from its two neighbours''. No pointer is ever \cc{NULL}, so the four
 operations have no special cases at all.
 
-\listingfile[label=lst:linkeddeque]{sol/p51.c}{A linked deque with an embedded sentinel
+\listingfile[label=lst:linkeddeque]{sol/p51.cpp}{A linked deque with a sentinel node
 (Problem~\ref{prob:51}, Tracing~\ref{trace:25}).}
 
-\begin{note}{Never copy a struct that contains its own sentinel}
-Here the sentinel is a member of the \cc{linkedDeque} struct, and the first and last
-nodes point at its address. A copy \cc{linkedDeque e = d;} (or passing the struct by
-value) creates a second sentinel at a different address whose \cc{next} and \cc{prev}
-still lead into \cc{d}'s nodes, while those nodes still point back to \cc{d}'s sentinel.
-Walking \cc{e} from its sentinel never returns to it. Always pass \cc{linkedDeque *}.
-(A sentinel allocated with \cc{malloc}, as in Listing~\ref{lst:dllist}, avoids this
-particular trap but still shares the nodes.)
+\begin{note}{Copying a linked deque copies only the pointer}
+\cc{LinkedDeque e = d;} copies the two members: the \emph{pointer} \cc{sentinel} and the
+number \cc{count}. Both objects now use the same nodes. A \cc{push} on \cc{d} is seen
+when walking \cc{e}, but \cc{e.count} is not updated, so \cc{e.size()} becomes wrong
+(Tracing~\ref{trace:25}). This is a \emph{shallow copy}. Do not copy a linked
+structure unless you write code that copies every node.
 \end{note}
 
 \begin{table}[ht]\centering\small
@@ -143,7 +150,7 @@ the window is not enough: when the maximum leaves the window, the next maximum i
 The back behaves like the monotonic stack of Section~\ref{sec:monostack}, the front like
 the queue of a sliding window. A deque is exactly the structure that does both.
 
-\listingfile[label=lst:slidingmax]{sol/p53.c}{Sliding window maximum
+\listingfile[label=lst:slidingmax]{sol/p53.cpp}{Sliding window maximum
 (Problem~\ref{prob:53}, Tracing~\ref{trace:23}).}
 
 \begin{table}[ht]\centering\small

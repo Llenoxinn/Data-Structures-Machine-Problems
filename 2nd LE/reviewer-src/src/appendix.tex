@@ -73,7 +73,7 @@ DP over the last $k$ values (Jump Game VI) & $\Theta(n)$ & $\Theta(n)$\\\bottomr
 \item \textbf{Shallow versus deep.} Copying a struct copies pointers, not nodes. A struct
   that \emph{contains} its own sentinel must never be copied at all.
 \item \textbf{Do not walk until \cc{NULL} when the structure changes under you}; walk a
-  counted number of steps. Read \cc{qSize}/\cc{stSize} once before a loop that changes
+  counted number of steps. Read \cc{q.size()}/\cc{st.size()} once before a loop that changes
   the structure.
 \item \textbf{Condition order.} Test the pointer before dereferencing it:
   \cc{p != NULL \&\& p->item == x}, \cc{fast \&\& fast->next}.
@@ -84,9 +84,9 @@ DP over the last $k$ values (Jump Game VI) & $\Theta(n)$ & $\Theta(n)$\\\bottomr
   Integer division truncates toward zero: \cc{-7/2} is $-3$.
 \item \textbf{Stack discipline.} Pop the right operand first. A transfer between two
   stacks reverses the order; two transfers restore it.
-\item \textbf{Failed pops.} The course library leaves the output variable unchanged when
-  a pop fails; the STL's \cc{pop()} returns nothing and must not be called on an empty
-  container.
+\item \textbf{Empty pops.} \cc{pop()} returns nothing: read \cc{top()}/\cc{front()}
+  first. Never call \cc{top}, \cc{front}, \cc{back} or \cc{pop} on an empty container;
+  test \cc{!st.empty()} first.
 \item \textbf{Monotonic structures store indices}, not values, whenever an item can
   expire or an answer must be written to its position. Decide \cc{<} versus \cc{<=} from
   the word ``strictly''.
@@ -111,16 +111,14 @@ It prints:
 
 \begin{table}[ht]\centering\small
 \begin{tabular}{@{}ll@{}}\toprule
-Course library & STL\\\midrule
-\cc{stPush(\&s,x)} / \cc{stPop(\&s,\&x)} / \cc{stTop(\&s,\&x)} &
-  \cc{s.push(x)} / \cc{x=s.top(); s.pop();} / \cc{x=s.top()}\\
-\cc{qEnq(\&q,x)} / \cc{qDeq(\&q,\&x)} / \cc{qFront(\&q,\&x)} &
-  \cc{q.push(x)} / \cc{x=q.front(); q.pop();} / \cc{x=q.front()}\\
-\cc{dqPushFront}, \cc{dqPushBack} & \cc{d.push\_front(x)}, \cc{d.push\_back(x)}\\
-\cc{dqPopFront}, \cc{dqPopBack} & \cc{d.pop\_front()}, \cc{d.pop\_back()}\\
-\cc{dqFront}, \cc{dqBack}, \cc{dqSize}, \cc{dqEmpty} & \cc{d.front()}, \cc{d.back()},
-  \cc{d.size()}, \cc{d.empty()}\\
-return value 0 on an empty structure & undefined behaviour: test \cc{empty()} first\\\bottomrule
+You want to & stack / queue / deque\\\midrule
+add & \cc{st.push(x)} / \cc{q.push(x)} / \cc{d.push\_front(x)}, \cc{d.push\_back(x)}\\
+look (not remove) & \cc{st.top()} / \cc{q.front()}, \cc{q.back()} / \cc{d.front()}, \cc{d.back()}\\
+remove & \cc{st.pop()} / \cc{q.pop()} / \cc{d.pop\_front()}, \cc{d.pop\_back()}\\
+remove into \cc{x} & \cc{x = st.top(); st.pop();} / \cc{x = q.front(); q.pop();}\\
+check & \cc{empty()}, \cc{size()} on all three\\
+empty structure & \cc{top}/\cc{front}/\cc{pop} undefined: test \cc{empty()} first\\\bottomrule
 \end{tabular}
-\caption{Translating the course library to the STL.}
+\caption{Stack, queue and deque operations at a glance. The classes \cc{Stack},
+\cc{Queue}, \cc{Deque} of Chapters~\ref{ch:stacks}--\ref{ch:deques} use the same names.}
 \end{table}

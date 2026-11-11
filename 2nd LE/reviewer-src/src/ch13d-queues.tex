@@ -15,10 +15,10 @@ under newer ones); transferring back from \cc{out} to \cc{in} after every dequeu
 \solution{Problem}{44}
 \idea After enqueueing $x$, rotate the $n-1$ older items behind it (dequeue and
 re-enqueue each). The front of the queue is then always the most recent item, the top.
-\listingfile{sol/p44.c}{A stack from one queue.}
-\complexity \cc{qsPush}: $\Theta(n)$; \cc{qsPop}, \cc{qsTop}: $\Theta(1)$.
-\mistakes Evaluating \cc{qSize} after the enqueue and rotating all $n$ items, which puts
-$x$ back at the rear; rotating in \cc{qsTop} as well as in \cc{qsPush}.
+\listingfile{sol/p44.cpp}{A stack from one queue.}
+\complexity \cc{push}: $\Theta(n)$; \cc{pop}, \cc{top}: $\Theta(1)$.
+\mistakes Rotating all $n$ items instead of the $n-1$ older ones, which puts $x$ back at
+the rear; rotating in \cc{top} as well as in \cc{push}.
 
 \solution{Problem}{45}
 The solution is Listing~\ref{lst:josephus} of Chapter~\ref{ch:queues}.
@@ -33,16 +33,16 @@ recurrence without adding 1; numbering from 0 in the simulation.
 \idea A stack reverses: move the first $k$ items from the queue to the stack, then back
 to the rear of the queue. They are reversed but now stand behind the other $n-k$ items,
 so rotate those $n-k$ items once around.
-\listingfile{sol/p46.c}{Reversing the first $k$ items of a queue.}
+\listingfile{sol/p46.cpp}{Reversing the first $k$ items of a queue.}
 \complexity $\Theta(n)$: $k$ items move twice, $n-k$ once.
-\mistakes Using \cc{qSize(q)} as the loop bound while the loop changes the queue (the
+\mistakes Using \cc{q.size()} as the loop bound while the loop changes the queue (the
 solution reads it into \cc{rest} first); rotating $n$ items instead of $n-k$.
 
 \solution{Problem}{47}
 \idea Pings expire in the order they arrived, so the recent ones form a queue: enqueue
 \cc{t}, then dequeue from the front while the front is older than $t-3000$. The size of
 the queue is the answer.
-\listingfile{sol/p47.c}{Number of recent calls.}
+\listingfile{sol/p47.cpp}{Number of recent calls.}
 \complexity $\Theta(1)$ amortised: each ping is enqueued once and dequeued at most once.
 \mistakes Using \cc{<=} (the window is inclusive: a ping at exactly $t-3000$ counts);
 scanning every stored ping on each call.
@@ -54,7 +54,7 @@ scanning every stored ping on each call.
 reversal restores its order on the stack, with $x_1$ on top; (5)~alternately pop one item
 from the stack and rotate one item of the queue to the rear. The comments in the listing
 show the queue for $[1..8]$ after each pass.
-\listingfile{sol/p48.c}{Interleaving the halves of a queue.}
+\listingfile{sol/p48.cpp}{Interleaving the halves of a queue.}
 \complexity $\Theta(n)$: a constant number of passes over $n/2$ items.
 \mistakes Pushing the first half once only, which interleaves it in reverse
 (\cc{4 5 3 6 2 7 1 8}); using a second queue, which is not permitted.
@@ -63,7 +63,7 @@ show the queue for $[1..8]$ after each pass.
 \idea Keep a queue of the \emph{indices} of the negative numbers in the current window, in
 order. When the window \cc{a[i-k+1..i]} is complete, drop from the front the indices that
 have slid out; the front, if any, is the first negative of the window.
-\listingfile{sol/p49.c}{First negative number in every window.}
+\listingfile{sol/p49.cpp}{First negative number in every window.}
 \complexity $\Theta(n)$: every index is enqueued and dequeued at most once. The window
 scan is $\Theta(nk)$.
 \mistakes Storing values instead of indices (then it cannot be decided when an item
