@@ -1,45 +1,53 @@
-# MP 11: "Ancestors, hear my plea ... Please bring honor to us all"
+# MP 11: Binary Search Tree Lineage & Inorder Neighbor Queries
 
-> Tranquil as a forest<br>
-> But on fire within.<br>
-> Once you find your center<br>
-> You are sure to win.
+## Overview
 
-## Problem
+`beMyMasterAncestor.cpp` implements a parent-linked Binary Search Tree (`BST`) supporting insertion, search, proper ancestor/descendant checks, and inorder successor/predecessor lookups.
 
-Implement the following additional operations for a **binary search tree**.
+## Data Structures & Methods
 
-## Operations
+Implemented in [beMyMasterAncestor.cpp](beMyMasterAncestor.cpp):
 
-| Operation | Description |
-| --- | --- |
-| `bool ancestor(int a, int b)` | Returns `true` if `a` is a **proper ancestor** of `b`, `false` otherwise. |
-| `bool descendant(int a, int b)` | Returns `true` if `a` is a **proper descendant** of `b`, `false` otherwise. |
-| `int successor(int a)` | Returns the **successor** of `a`. |
-| `int predecessor(int a)` | Returns the **predecessor** of `a`. |
+- **`class node`** — Holds an integer `item` and `left`, `right`, and `parent` pointers.
+- **`class BST`** — Maintains the root pointer `r` and provides:
+  - `node* search(node *t, int a)` — Iterative BST lookup starting at `t`.
+  - `void rinsert(node **t, int x)` — Recursive BST insertion that sets each new node's `parent` pointer.
+  - `bool ancestor(int a, int b)` — Returns `true` when `a != b` and `b` lies along a downward BST search path starting from `a`.
+  - `bool descendant(int a, int b)` — Delegates to `ancestor(b, a)`.
+  - `int successor(int a)` — Finds the minimum key in `a`'s right subtree, or walks up `parent` pointers to the first ancestor reached from a left child; returns `a` if no successor exists.
+  - `int predecessor(int a)` — Finds the maximum key in `a`'s left subtree, or walks up `parent` pointers to the first ancestor reached from a right child; returns `a` if no predecessor exists.
 
-## Definitions
+## Input / Output Format
 
-- **Ancestor:** any node `y` on the unique path from the root `r` to node `n` is an ancestor of `n`. Every node is an ancestor of itself.
-- **Proper ancestor:** a node `y` that is an ancestor of `n` and is not the same node as `n`.
-- **Proper descendant:** a node `y` for which `n` is an ancestor of `y` and `y` is not the same node as `n`.
-- **Successor:** the next node or item in the inorder traversal of a binary tree. The last node or item in the traversal has no successor.
-- **Predecessor:** the previous node or item in the inorder traversal of a binary tree. The first node or item in the traversal has no predecessor.
+1. Read `n`, then insert `n` integers into the BST.
+2. Read `a b` and query `ancestor(a, b)`: prints `Laozi` if true, `Mushu` otherwise.
+3. Read `a b` and query `descendant(a, b)`: prints `Mulan` if true, `Mushu` otherwise.
+4. Read `a b` and print `successor(a)` on one line and `predecessor(b)` on the next, outputting `Li Shang` whenever a query has no result.
 
-## Input
+## Build & Run
 
-1. A positive integer `n`, the number of elements to insert into the BST, followed by `n` integers. Insert them one by one.
-2. Two items `a` and `b`. Determine if `a` is a proper ancestor of `b`.
-3. Two items `a` and `b`. Determine if `a` is a proper descendant of `b`.
-4. Two items `a` and `b`. Determine the successor of `a` and the predecessor of `b`.
+```bash
+g++ -std=c++17 beMyMasterAncestor.cpp -o mp11
+./mp11
+```
 
-## Output
+### Example
 
-| Query | Condition | Print |
-| --- | --- | --- |
-| Ancestor | `a` is an ancestor of `b` | `Laozi` |
-| Ancestor | otherwise | `Mushu` |
-| Descendant | `a` is a descendant of `b` | `Mulan` |
-| Descendant | otherwise | `Mushu` |
-| Successor and predecessor | they exist | the successor and predecessor |
-| Successor and predecessor | otherwise | `Li Shang` |
+Input:
+
+```text
+7
+20 10 30 5 15 25 35
+20 15
+35 30
+15 20
+```
+
+Output:
+
+```text
+Laozi
+Mulan
+20
+15
+```
