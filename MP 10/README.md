@@ -1,76 +1,49 @@
-# MP 10: [[ ^_^ (°o°) (^_^) (^O^) (^o^) (^^) ¯\_(ツ)_/¯ ]] ↟↟↟
+# MP 10: Infix Expression Tree Evaluator
 
-Read the lecture slides on **expression trees** first.
+## Overview
 
-## Problem
+`suchsymbols.cpp` parses parentless arithmetic infix expressions into a binary expression tree, prints both prefix and postfix traversals, and evaluates the expression using integer (`long`) arithmetic.
 
-Evaluate a given **infix expression**.
+## How It Works
 
-- The expression contains **no parentheses**.
-- The only operators are `+`, `−`, `*` and `/`.
-- `+` and `−` have the same precedence, and `*` and `/` have the same precedence.
-- `+` and `−` have **lower** precedence than `*` and `/`.
-- Operators with the same precedence are evaluated **left to right**. This affects which operator is placed where in the expression tree ↟.
+Implemented in [suchsymbols.cpp](suchsymbols.cpp):
+
+- **`struct TreeNode`** — Stores a token string (`item`) along with `left` and `right` child pointers.
+- **`TreeNode* build(string str)`** — Recursively builds the tree by locating the rightmost lowest-precedence operator (`+` or `-` first; `*` or `/` only if no `+`/`-` exists). Choosing the rightmost occurrence preserves left-to-right associativity for equal-precedence operators. When no operator remains, the substring becomes a leaf operand.
+- **`preOrder` / `postOrder`** — Emit space-separated prefix and postfix representations of the tree.
+- **`long solve(TreeNode *r)`** — Recursively parses leaf digit strings and evaluates `+`, `-`, `*`, and `/` nodes bottom-up.
+
+## Input / Output Format
+
+- **Input:** Whitespace-separated infix expression strings (integers and `+`, `-`, `*`, `/` without parentheses) read until EOF.
+- **Output:** Three lines per expression:
+  1. Prefix expression
+  2. Postfix expression
+  3. Evaluated `long` result
+
+## Build & Run
+
+```bash
+g++ -std=c++17 suchsymbols.cpp -o mp10
+./mp10
+```
 
 ### Example
 
-Take the infix expression `100/10*2/5`. All operators have the same precedence, so they are evaluated left to right. The resulting postfix expression, based on the expression tree, must evaluate `100/10` first.
+Input:
 
-## Approach
-
-- Build the expression tree of the infix expression to aid in its evaluation (see the slides).
-- You may implement this **iteratively or recursively**.
-- It is **not required** to build a `binaryTree` class, especially if you go recursive. At the very least, implement a **node** for the expression tree.
-- The input is a string, so string operations can help. For example:
-
-```cpp
-int main() {
-    string st = "34*2*3-2*3*7";
-    string left = st.substr(0, 6);
-    string right = st.substr(7);
-    int position = st.find("-");
-
-    cout << "string: " << st << endl;
-    cout << "left: " << left << endl;
-    cout << "right: " << right << endl;
-    cout << "position: " << position << endl;
-
-    return 0;
-}
+```text
+8+3*4-6/2
+24/4*3
 ```
 
-## Output
+Output:
 
-For each expression, print three lines:
-
-1. The **prefix** expression
-2. The **postfix** expression
-3. The computed **value**
-
-## Sample
-
-**Input**
-
-```
-1+2+3+4+5+6+7+8+9+10-55
-1-2-3-4-5-6-7-8-9-10+55
-100/2/5/5/2*100
-20*2+50
-```
-
-**Output**
-
-```
-- + + + + + + + + + 1 2 3 4 5 6 7 8 9 10 55
-1 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 + 10 + 55 -
-0
-+ - - - - - - - - - 1 2 3 4 5 6 7 8 9 10 55
-1 2 - 3 - 4 - 5 - 6 - 7 - 8 - 9 - 10 - 55 +
-2
-* / / / / 100 2 5 5 2 100
-100 2 / 5 / 5 / 2 / 100 *
-100
-+ * 20 2 50
-20 2 * 50 +
-90
+```text
+- + 8 * 3 4 / 6 2 
+8 3 4 * + 6 2 / - 
+17
+* / 24 4 3 
+24 4 / 3 * 
+18
 ```
