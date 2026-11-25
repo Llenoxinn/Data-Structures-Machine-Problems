@@ -1,69 +1,44 @@
-# MP 3: I Need A BigNum (BigNum), I Want A BigNum
+# MP 3: Arbitrary-Precision Integer & Fibonacci
 
-## Problem
+## Overview
 
-The 101st Fibonacci number has 21 digits. It cannot be stored even in an `unsigned long long`, whose range is only 0 to 18,446,744,073,709,551,615.
+`BigNum.h` and `BigNum.cpp` implement string-backed non-negative integers (`BigNum`) and an iterative Fibonacci generator capable of computing values well beyond 64-bit integer limits.
 
-One way to address this is to represent the number as a string, which can hold as many characters as needed.
+## API
 
-## Instructions
+Declared in [BigNum.h](BigNum.h) and defined in [BigNum.cpp](BigNum.cpp):
 
-### `BigNum` class
-
-Construct a class called `BigNum`.
-
-- It should have at least a `std::string` data member that represents the number.
-- Use C++'s `std::string` in this MP. When adding BigNums, remember that they are strings.
+### `BigNum` Class
 
 | Member | Description |
 | --- | --- |
-| `BigNum()` | Default constructor. Constructs the number `0`. |
-| `BigNum(std::string)` | Constructs a BigNum from a string. Do **not** assume the string is a valid base 10 number. If it is not, set the BigNum to `0`. |
-| `BigNum add(BigNum)` | Adds two BigNums. Needed to generate large Fibonacci numbers. |
-| `std::string getNum()` | Accessor that returns the `std::string` of the BigNum. |
+| `BigNum()` | Default constructor; initializes the value to `"0"`. |
+| `BigNum(std::string str)` | Constructs a `BigNum` from `str` (strips a leading `'+'` if present, or falls back to `"0"` when empty). |
+| `BigNum add(BigNum &other) const` | Adds `this` and `other` digit by digit from least significant to most significant digit with carry propagation. |
+| `std::string getNum()` | Returns the decimal string representation. |
+
+### Free Function
 
 ```cpp
-BigNum();
-BigNum(std::string);
-BigNum add(BigNum);
-std::string getNum();
+BigNum fibonacci(unsigned int n);
 ```
 
-### `fibonacci` function
+Computes the `n`-th Fibonacci number iteratively (`F(0) = 0`, `F(1) = 1`) using `BigNum::add`.
 
-Construct a function `fibonacci` (**not** a member function of `BigNum`) that takes an `unsigned int n` and returns the nth Fibonacci element as a `BigNum`.
+## Build Notes
 
-```cpp
-BigNum fibonacci(unsigned int);
+This module intentionally omits `main()` so it can be linked with an external test driver:
+
+```bash
+g++ -std=c++17 BigNum.cpp driver.cpp -o mp3
+./mp3
 ```
 
-- The 0th Fibonacci element is `0` and the 1st is `1`.
-- Each next element is the sum of the previous two.
-- The Fibonacci elements must be represented as `BigNum`, and their addition must use the `add` operation of the `BigNum` class.
+### Sample Results
 
-## Notes
-
-- **Do not submit a `main` function.** The `BigNum` header file and implementation file are enough.
-- For context, the input to the machine problem (`main`) is an `unsigned int` used to call `fibonacci(unsigned int)`.
-
-## Sample
-
-**Input**
-
-```
-6
-30
-108
-400
-734
-```
-
-**Output**
-
-```
-8
-832040
-16641027750620563662096
-17602368064501396646822694539241125077038438330449219188672599289675345044216019675
-1115431593560796532808555613387415446435640602179650541231738132603247322617636923378668235747257928207760719121572766322243359119244897932753117196435737
-```
+| `n` | `fibonacci(n).getNum()` |
+| --- | --- |
+| `0` | `0` |
+| `10` | `55` |
+| `50` | `12586269025` |
+| `100` | `354224848179261915075` |

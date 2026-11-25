@@ -1,67 +1,47 @@
-# MP 1: A[i] == i?
+# MP 1: Fixed-Point Search in a Sorted Array
 
-## Problem
+## Overview
 
-Given an array `A` of size `n`, determine whether there is an element `A[i]` equal to its index `i`. The elements of `A` are assumed to be sorted in increasing order.
+`amIReallyI.cpp` determines whether a sorted integer array `A` of length `n` (`n <= 20`) contains at least one index `i` where `A[i] == i`, and reports how many element comparisons each search method performs.
 
-Produce **two solutions**:
+## Implementation
 
-1. A **linear** solution
-2. A **sub-linear** solution
+Both search functions live in [amIReallyI.cpp](amIReallyI.cpp) and communicate results to `main` via reference parameters (`bool &foundYah`, `int &count`):
 
-Implement them as two separate functions and call them one after another in `main`.
+- `void linear(int A[], int n, bool &foundYah, int &count)` — Scans from index `0` onward, stopping as soon as a match is found or `A[i] > i` (early termination on strictly increasing values).
+- `void subLinear(int A[], int n, bool &foundYah, int &count)` — Performs binary search across `[0, n - 1]`, adjusting `left` or `right` based on whether `A[middle] < middle` or `A[middle] > middle`.
 
-## Requirements
+No global variables are used; only `main` handles input and output.
 
-- Do **not** use global variables.
-- Print the number of comparisons made (how many times `A[i] == i` was executed) and whether the answer is `YES` or `NO`.
-- **No printing inside the functions.** Only `main` may print.
+## Input / Output Format
 
-## Input
+- **Input:** An integer `t` (number of test cases), followed by `t` pairs of an integer `n` (`n <= 20`) and `n` sorted integers.
+- **Output:** Two lines per test case (`linear` first, then `subLinear`), each formatted as `YES <comparisons>` or `NO <comparisons>`.
 
-| Line | Description |
-| --- | --- |
-| 1 | `t`, the number of test cases |
-| Per test case | `n` (where `5 <= n <= 20`), followed by `n` integers |
+## Build & Run
 
-Declare the array with a capacity of 20.
-
-## Output
-
-For each test case, print **2 lines** (so `2t` lines in total):
-
-1. Linear solution
-2. Sub-linear solution
-
-Each line has the form:
-
-```
-YES <comparisons>
-```
-or
-```
-NO <comparisons>
+```bash
+g++ -std=c++17 amIReallyI.cpp -o mp1
+./mp1
 ```
 
-`YES` means some `A[i] == i`; `NO` means there is none.
+### Example
 
-## Sample
+Input:
 
-**Input**
-
-```
+```text
 2
+6
+-3 -1 1 3 7 9
 5
-0 1 2 3 4
-5
-1 2 3 4 5
+2 4 6 8 10
 ```
 
-**Output**
+Output:
 
-```
-YES 1
-YES 1
+```text
+YES 4
+YES 3
 NO 1
 NO 2
 ```

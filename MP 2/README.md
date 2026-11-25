@@ -1,91 +1,34 @@
-# MP 2: 2 Become 1
+# MP 2: Merging Two Sorted String Arrays
 
-## Problem
+## Overview
 
-Given two sorted lists of strings, merge them into one sorted list.
+`merge.h` and `merge.cpp` provide a standalone library function that combines two lexicographically sorted `std::string` arrays into a single sorted output array while counting string comparisons.
 
-Implement the following function:
+## API
+
+Declared in [merge.h](merge.h) and implemented in [merge.cpp](merge.cpp):
 
 ```cpp
 int merge(string A[], string B[], string C[], int n, int m);
 ```
 
-- `A` has `n` elements, `B` has `m` elements.
-- `C` can accommodate `n + m` elements.
-- Merge the sorted elements of `A` and `B` into `C`, keeping them sorted.
-- Return the **number of string comparisons** made while merging.
-- In case of duplicates, take the string from `A` first.
+- `A` — First sorted input array of `n` strings.
+- `B` — Second sorted input array of `m` strings.
+- `C` — Destination buffer sized for at least `n + m` strings.
+- **Returns:** Total number of string comparisons executed while both arrays still have unconsumed elements.
 
-## Samples
+When `A[a] == B[b]`, the element from `A` is placed into `C` first (`A[a] <= B[b]`). Any leftover elements after one array is exhausted are copied directly into `C` without additional comparisons. No `main` function is included so the module can be linked against a test harness.
 
-### Sample 1
+## Usage Example
 
-**Input**
+Compile with a driver file (e.g., `driver.cpp`) that reads `A` and `B` and calls `merge`:
 
-```
-4 cayennepepper ginger tarragon turmeric
-4 celeryseed marjoram saffron whitepepper
-```
-
-**Output**
-
-```
-7
-cayennepepper celeryseed ginger marjoram saffron tarragon turmeric
+```bash
+g++ -std=c++17 merge.cpp driver.cpp -o mp2
+./mp2
 ```
 
-The first line is the number of comparisons (7). The second line is the contents of `C`.
+Given `A = ["alpha", "delta", "hotel"]` (`n = 3`) and `B = ["bravo", "echo", "india"]` (`m = 3`):
 
-The 7 comparisons were:
-
-1. `"cayennepepper"` with `"celeryseed"`
-2. `"ginger"` with `"celeryseed"`
-3. `"ginger"` with `"marjoram"`
-4. `"marjoram"` with `"tarragon"`
-5. `"saffron"` with `"tarragon"`
-6. `"tarragon"` with `"whitepepper"`
-7. `"turmeric"` with `"whitepepper"`
-
-### Sample 2
-
-**Input**
-
-```
-3 coriander dill nutmeg
-3 thyme vanillabean wormwood
-```
-
-**Output**
-
-```
-3
-coriander dill nutmeg thyme vanillabean wormwood
-```
-
-Only 3 comparisons were made:
-
-1. `"coriander"` with `"thyme"`
-2. `"dill"` with `"thyme"`
-3. `"nutmeg"` with `"thyme"`
-
-No more comparisons were needed, since `A` ran out of strings.
-
-## Notes
-
-- **Do not** create a `main` function. Implement `merge` only.
-- For reference, the driver code is:
-
-```cpp
-int n, m;
-cin >> n;
-for (int i = 0; i < n; i++)
-    cin >> A[i];
-cin >> m;
-for (int i = 0; i < m; i++)
-    cin >> B[i];
-
-cout << merge(A, B, C, n, m) << endl;
-for (int i = 0; i < n + m; i++)
-    cout << C[i] << " ";
-cout << endl;
-```
+- Comparisons made: `5` (`"alpha"` vs `"bravo"`, `"delta"` vs `"bravo"`, `"delta"` vs `"echo"`, `"hotel"` vs `"echo"`, `"hotel"` vs `"india"`).
+- Resulting `C`: `["alpha", "bravo", "delta", "echo", "hotel", "india"]` (`"india"` is appended without a comparison once `A` is empty).
