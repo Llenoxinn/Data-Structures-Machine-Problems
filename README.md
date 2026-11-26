@@ -12,6 +12,7 @@ A collection of C and C++ implementations for Data Structures coursework at the 
 ├── MP 4/                       # Fixed-capacity integer array list and test harness
 ├── MP 10/                      # Infix arithmetic expression tree parser & evaluator
 ├── MP 11/                      # Parent-linked BST with lineage & inorder neighbor queries
+├── MP 12/                      # Self-balancing AVL tree with search probe counting
 ├── MP Assignments/
 │   └── Assignment 1/           # Binary packet stream checksum verifier & text reconstructor
 └── 2nd LE/                     # Second Long Exam notes, PDFs, LaTeX source, and test suite
@@ -31,6 +32,7 @@ Each module folder contains its own `README.md` with implementation details, inp
 | **MP 4** | Static-capacity (`MAX = 20`) integer list with stdin test driver | `arrayOfLight.h`, `arrayOfLight.cpp` | [MP 4](MP%204/README.md) |
 | **MP 10** | Binary expression tree construction, prefix/postfix traversal, and evaluation | `suchsymbols.cpp` | [MP 10](MP%2010/README.md) |
 | **MP 11** | Parent-linked BST supporting ancestor, descendant, successor, and predecessor | `beMyMasterAncestor.cpp` | [MP 11](MP%2011/README.md) |
+| **MP 12** | Self-balancing AVL tree with rotations and comparison-counted lookup | `avlTree.cpp` | [MP 12](MP%2012/README.md) |
 | **Assignment 1** | 16-bit one's-complement packet validation and multi-stream reassembly | `poem.h`, `poem.cpp` | [Assignment 1](MP%20Assignments/Assignment%201/README.md) |
 
 ## Second Long Exam (2nd LE) Reviewer
@@ -46,7 +48,7 @@ The [`2nd LE`](2nd%20LE/) directory holds study materials covering **Array Lists
 
 ### Machine Problems (C++17)
 
-Standalone programs (`MP 1`, `MP 4`, `MP 10`, `MP 11`, `Assignment 1`) include `main()` and can be compiled directly with `g++`:
+Standalone programs (`MP 1`, `MP 4`, `MP 10`, `MP 11`, `MP 12`, `Assignment 1`) include `main()` and can be compiled directly with `g++`:
 
 ```bash
 g++ -std=c++17 "MP 1/amIReallyI.cpp" -o mp1 && ./mp1
