@@ -50,3 +50,8 @@ Output:
 ```text
 No
 ```
+
+## Related Study Material
+
+- **[Topics/Heaps](../Topics/Heaps/README.md)** — Quick reference and index for heap notes and practice problems.
+- **[Heap-Heap-Hooray](https://github.com/Llenoxinn/Heap-Heap-Hooray)** — Companion repository with [`heapNotes.md`](https://github.com/Llenoxinn/Heap-Heap-Hooray/blob/main/heapNotes.md), array-based Min-Heap and Heap Sort implementations, and the 34-problem [`heaps-dont-lie`](https://github.com/Llenoxinn/Heap-Heap-Hooray/tree/main/heaps-dont-lie) playbook (see [`01-check-if-array-is-heap.md`](https://github.com/Llenoxinn/Heap-Heap-Hooray/blob/main/heaps-dont-lie/easy/01-check-if-array-is-heap.md) and [`14-check-min-heap-from-level-order.md`](https://github.com/Llenoxinn/Heap-Heap-Hooray/blob/main/heaps-dont-lie/medium/14-check-min-heap-from-level-order.md)).

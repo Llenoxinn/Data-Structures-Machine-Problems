@@ -16,9 +16,12 @@ A collection of C and C++ implementations for Data Structures coursework at the 
 ├── MP 13/                      # 0-indexed array min-heap property validator
 ├── MP Assignments/
 │   └── Assignment 1/           # Binary packet stream checksum verifier & text reconstructor
-└── 2nd LE/                     # Second Long Exam notes, PDFs, LaTeX source, and test suite
-    ├── NEW/                    # Stack & queue ADT summaries, practice problems, and snippets
-    └── reviewer-src/           # LaTeX source and compiled/tested C & C++ programs
+├── 2nd LE/                     # Second Long Exam notes, PDFs, LaTeX source, and test suite
+│   ├── NEW/                    # Stack & queue ADT summaries, practice problems, and snippets
+│   └── reviewer-src/           # LaTeX source and compiled/tested C & C++ programs
+└── Topics/                     # Cross-repository topic index & pointers to companion repos
+    ├── Heaps/                  # Pointer & quick reference -> Heap-Heap-Hooray
+    └── Hashing/                # Pointer & quick reference -> HashbyHash
 ```
 
 ## Machine Problems & Assignments
@@ -45,6 +48,15 @@ The [`2nd LE`](2nd%20LE/) directory holds study materials covering **Array Lists
 - **[Second Long Exam - Notes and Practice.pdf](2nd%20LE/Second%20Long%20Exam%20-%20Notes%20and%20Practice.pdf)** — Condensed exam notes and practice problems.
 - **[`2nd LE/reviewer-src/`](2nd%20LE/reviewer-src/README.md)** — LaTeX source (`src/reviewer.tex`), course ADT headers (`code/lib/`), lecture listings (`code/listings/`), tracing programs (`t01`–`t25`), problem solutions (`p01`–`p57`), and automated verification tests (`code/test/`).
 - **[`2nd LE/NEW/`](2nd%20LE/NEW/)** — Stack and queue ADT summaries ([`01-SUMMARY-stack-queue.md`](2nd%20LE/NEW/01-SUMMARY-stack-queue.md)), sample tracing/theory problems ([`02-PROBLEMS-stack-queue.md`](2nd%20LE/NEW/02-PROBLEMS-stack-queue.md)), ADT slides, and array/circular/inherited queue implementations.
+
+## Companion Topic Repositories
+
+Notes, reference implementations, and LeetCode-style problem playbooks for newer topics live in dedicated companion repositories (indexed locally in [`Topics/`](Topics/README.md)):
+
+| Topic | Repository | Local Guide | Highlights | Related MP |
+| --- | --- | --- | --- | --- |
+| **Heaps & Priority Queues** | [Llenoxinn/Heap-Heap-Hooray](https://github.com/Llenoxinn/Heap-Heap-Hooray) | [Topics/Heaps](Topics/Heaps/README.md) | [`heapNotes.md`](https://github.com/Llenoxinn/Heap-Heap-Hooray/blob/main/heapNotes.md), 1-indexed Min-Heap & Heap Sort, and the 34-problem [`heaps-dont-lie`](https://github.com/Llenoxinn/Heap-Heap-Hooray/tree/main/heaps-dont-lie) C++ playbook | [MP 13](MP%2013/README.md) |
+| **Hashing & Hash Tables** | [Llenoxinn/HashbyHash](https://github.com/Llenoxinn/HashbyHash) | [Topics/Hashing](Topics/Hashing/README.md) | [`hashnotes.md`](https://github.com/Llenoxinn/HashbyHash/blob/main/hashnotes.md), BST-chained `HashTable` ([`hash.cpp`](https://github.com/Llenoxinn/HashbyHash/blob/main/hash.cpp)), and the 11-problem [`hashuh`](https://github.com/Llenoxinn/HashbyHash/tree/main/hashuh) C++ playbook | Builds on [MP 11](MP%2011/README.md) |
 
 ## Building & Running
 

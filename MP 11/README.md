@@ -51,3 +51,8 @@ Mulan
 20
 15
 ```
+
+## Related Study Material
+
+- **[MP 12: Self-Balancing AVL Tree](../MP%2012/README.md)** — Extends the parent-linked BST structure with height tracking and rotation rebalancing.
+- **[Topics/Hashing](../Topics/Hashing/README.md)** & **[HashbyHash](https://github.com/Llenoxinn/HashbyHash)** — Uses a Binary Search Tree inside every hash bucket for separate chaining in [`hash.cpp`](https://github.com/Llenoxinn/HashbyHash/blob/main/hash.cpp).
